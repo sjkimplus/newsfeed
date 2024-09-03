@@ -5,13 +5,15 @@ import com.sparta.newsfeed.dto.post.PostResponseDto;
 import com.sparta.newsfeed.entity.*;
 import com.sparta.newsfeed.entity.like.LikeTypeEnum;
 import com.sparta.newsfeed.repository.*;
+import com.sparta.newsfeed.utile.FileUtils;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.io.File;
+import java.util.*;
 import java.util.List;
 
 import static com.sparta.newsfeed.entity.Type.POST;
@@ -25,8 +27,10 @@ public class PostService {
     private final ImageRepository imageRepository;
     private final LikeRepository likeRepository;
     private final PostCommentRepository postCommentRepository;
-
-    public void createPost(long userId, PostRequestDto requestDto, List<MultipartFile> multipartFile) {
+    private final FileUtils fileUtils;
+    @Value("${file.upload.path}")
+    private String filePath;
+    public List<String> createPost(long userId, PostRequestDto requestDto, List<MultipartFile> multipartFile) throws Exception{
         // find user
         User user = userRepository.findById(userId).orElseThrow();
 
@@ -34,15 +38,17 @@ public class PostService {
         Post post = new Post(user, requestDto.getContent());
         postRepository.save(post);
 
+        List<String> list = fileUtils.parseInsertFileInfo(multipartFile);
 
-        for (MultipartFile imgUrl : multipartFile){
+
+        for (String imgUrl : list) {
             // insert image
             if (!imgUrl.isEmpty()) {
-                Image img = new Image(post.getId(), Type.POST, imgUrl.getOriginalFilename());
+                Image img = new Image(post.getId(), Type.POST, imgUrl);
                 imageRepository.save(img);
             }
         }
-
+        return list;
     }
 
 
@@ -61,6 +67,6 @@ public class PostService {
 
         // Create and return the PostResponseDto with the collected image URLs
         return new PostResponseDto(post, imageUrls);
-
     }
+
 }
