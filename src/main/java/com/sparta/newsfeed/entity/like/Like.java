@@ -35,8 +35,8 @@ public class Like {
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime createAt;
 
-    public Like(Boolean type, Long itemId, User user) {
-        this.type = type ? LikeTypeEnum.POST : LikeTypeEnum.COMMENT;
+    public Like(LikeTypeEnum type, Long itemId, User user) {
+        this.type = type;
         this.itemId = itemId;
         this.user = user;
     }
