@@ -30,11 +30,16 @@ public class PostComment extends Timestamped{
     @Nullable
     private Long userId;
 
+    @Column(name = "user_name")
+    @Nullable
+    private String userName;
+
 
     public PostComment(PostCommentRequestDto commentRequestDto, Post post){
         this.content = commentRequestDto.getContent();
         this.userId = commentRequestDto.getUserId();
         this.post = post;
+        this.userName = post.getUser().getName();
     }
 
     public void commentsModify(String content) {
