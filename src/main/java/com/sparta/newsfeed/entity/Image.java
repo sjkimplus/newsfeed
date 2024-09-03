@@ -3,6 +3,7 @@ package com.sparta.newsfeed.entity;
 import jakarta.persistence.*;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.lang.Nullable;
 
@@ -11,8 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "/image")
+@Table(name = "image")
 @NoArgsConstructor
+@Setter
 public class Image {
 
     @Id
@@ -42,5 +44,8 @@ public class Image {
         this.type = type;
         this.imageUrl = imageUrl;
     }
-
+    // URL을 추가하는 메서드
+    public void addImageUrl(String url) {
+        this.imageUrl.add(url);
+    }
 }

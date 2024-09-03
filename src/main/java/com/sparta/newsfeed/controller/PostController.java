@@ -13,9 +13,9 @@ public class PostController {
     private final PostService postService;
 
     // 게시물 올리기
-    @PostMapping("/posts/{id}")
-    public void createPost(@PathVariable("id") long userId, @RequestBody PostRequestDto requestDto) {
-        postService.createPost(userId, requestDto);
-    }
+//    @PostMapping("/posts/{id}")
+//    public void createPost(@PathVariable("id") long userId, @RequestBody PostRequestDto requestDto) {
+//        postService.createPost(userId, requestDto);
+//    }
 
 }

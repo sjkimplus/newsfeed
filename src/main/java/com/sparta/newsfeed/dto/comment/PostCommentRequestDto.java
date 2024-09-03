@@ -6,6 +6,6 @@ import lombok.Getter;
 public class PostCommentRequestDto {
 
     private String content;
-    private Long postId;
     private Long userId;
+
 }

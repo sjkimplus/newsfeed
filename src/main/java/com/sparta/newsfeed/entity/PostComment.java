@@ -4,12 +4,14 @@ import com.sparta.newsfeed.dto.comment.PostCommentRequestDto;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.lang.Nullable;
 
 @Entity
 @Table(name = "post_comment")
 @Getter
 @NoArgsConstructor
+@Setter
 public class PostComment extends Timestamped{
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,12 +31,14 @@ public class PostComment extends Timestamped{
     private Long userId;
 
 
-    public PostComment(PostCommentRequestDto commentRequestDto, Post post, User user){
+    public PostComment(PostCommentRequestDto commentRequestDto, Post post){
         this.content = commentRequestDto.getContent();
-        this.userId = user.getId();
+        this.userId = commentRequestDto.getUserId();
         this.post = post;
     }
 
-
+    public void commentsModify(String content) {
+        this.content = content;
+    }
 
 }

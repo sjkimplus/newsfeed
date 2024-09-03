@@ -16,20 +16,22 @@ public class PostCommentResponseDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public PostCommentResponseDto(PostComment postComment, PostCommentRequestDto requestDto) {
+    public PostCommentResponseDto(PostComment postComment, PostCommentRequestDto requestDto, Long postId) {
         this.id = postComment.getId();
-        this.postId = requestDto.getPostId();
+        this.postId = postId;
         this.userId = requestDto.getUserId();
         this.content = postComment.getContent();
         this.createdAt = postComment.getCreateAt();
         this.updatedAt = postComment.getUpdatedAt();
     }
 
-    public PostCommentResponseDto(PostComment postComment, Long postId){
+    public PostCommentResponseDto(PostComment postComment){
         this.id = postComment.getId();
-        this.postId = postId;
+        this.postId = postComment.getPost().getId();
+        this.userId = postComment.getUserId();
         this.content = postComment.getContent();
         this.createdAt = postComment.getCreateAt();
         this.updatedAt = postComment.getUpdatedAt();
     }
+
 }
