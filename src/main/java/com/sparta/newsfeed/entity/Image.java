@@ -1,6 +1,7 @@
 package com.sparta.newsfeed.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -12,7 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "image")
+@Table(name = "/image")
+@Getter
 @NoArgsConstructor
 @Setter
 public class Image {
