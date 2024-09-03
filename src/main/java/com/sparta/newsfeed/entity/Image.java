@@ -1,6 +1,7 @@
 package com.sparta.newsfeed.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -12,6 +13,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "/image")
+@Getter
 @NoArgsConstructor
 public class Image {
 
