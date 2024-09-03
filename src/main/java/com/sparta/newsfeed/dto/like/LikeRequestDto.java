@@ -7,4 +7,5 @@ public class LikeRequestDto {
     private Long id;
     private Boolean type;
     private Long itemId;
+    private Long userId;
 }

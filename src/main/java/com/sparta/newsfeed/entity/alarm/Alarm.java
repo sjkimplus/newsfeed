@@ -1,10 +1,15 @@
 package com.sparta.newsfeed.entity.alarm;
 
 import com.sparta.newsfeed.dto.alarm.AlarmRequestDto;
+import com.sparta.newsfeed.entity.PostComment;
 import com.sparta.newsfeed.entity.User;
+import com.sparta.newsfeed.entity.like.Like;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -23,6 +28,14 @@ public class Alarm {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    /* 긴가민가
+    @OneToMany(mappedBy = "alarm")
+    private List<PostComment> postCommentList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "alarm")
+    private List<Like> likeList = new ArrayList<>();
+     */
 
     public Alarm(AlarmRequestDto requestDto, User user) {
         if (requestDto.getType()) {
