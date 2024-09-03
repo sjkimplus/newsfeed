@@ -7,7 +7,11 @@ import com.sparta.newsfeed.entity.like.LikeTypeEnum;
 import com.sparta.newsfeed.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.List;
 
 import static com.sparta.newsfeed.entity.Type.POST;
@@ -22,7 +26,7 @@ public class PostService {
     private final LikeRepository likeRepository;
     private final PostCommentRepository postCommentRepository;
 
-    public void createPost(long userId, PostRequestDto requestDto) {
+    public void createPost(long userId, PostRequestDto requestDto, List<MultipartFile> multipartFile) {
         // find user
         User user = userRepository.findById(userId).orElseThrow();
 
@@ -30,9 +34,15 @@ public class PostService {
         Post post = new Post(user, requestDto.getContent());
         postRepository.save(post);
 
-        // insert image
-        Image img = new Image(post.getId(), Type.POST, requestDto.getImageUrl());
-        imageRepository.save(img);
+
+        for (MultipartFile imgUrl : multipartFile){
+            // insert image
+            if (!imgUrl.isEmpty()) {
+                Image img = new Image(post.getId(), Type.POST, imgUrl.getOriginalFilename());
+                imageRepository.save(img);
+            }
+        }
+
     }
 
 //    public PostResponseDto getPost(long postId) {
@@ -47,15 +57,17 @@ public class PostService {
         // find the post
         Post post = postRepository.findById(postId).orElseThrow();
 
-        // get the corresponding image of the post
-        Image image = imageRepository.findByTypeAndItemId(Type.POST, post.getId()).orElseThrow();
+        // Initialize a list to store image URLs
+        List<String> imageUrls = new ArrayList<>();
 
-        // Get the number of likes
-        Long likeCount = likeRepository.countByTypeAndItemId(LikeTypeEnum.POST, postId);
+        // get the corresponding images of the post
+        List<Image> images = imageRepository.findAllByTypeAndItemId(Type.POST, post.getId());
+        for (Image file : images) {
+            imageUrls.addAll(file.getImageUrl()); // Add all image URLs to the list
+        }
 
-        // Get the comments
-        List<PostComment> comments = postCommentRepository.findAllByPostId(postId);
+        // Create and return the PostResponseDto with the collected image URLs
+        return new PostResponseDto(post, imageUrls);
 
-        return new PostResponseDto(post, image.getImageUrl(), likeCount, comments);
     }
 }

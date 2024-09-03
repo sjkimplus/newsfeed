@@ -17,25 +17,25 @@ public class PostCommentController {
     private final PostCommentService commentService;
 
 
-    @PostMapping("/post/{postId}/comment")    // 댓글 작성
+    @PostMapping("/posts/{postId}/comments")    // 댓글 작성
     public ResponseEntity<PostCommentResponseDto> createdComment(@RequestBody PostCommentRequestDto commentReqDto,
                                                                  @PathVariable Long postId) {
         return ResponseEntity.ok(commentService.createdComment(commentReqDto, postId));
     }
 
-    @GetMapping("/post/{postId}/comment")    //특정 게시물에 있는 댓글 전체 조회
-    public ResponseEntity<List<PostCommentResponseDto>> findByAllComment(@PathVariable Long postId) {
+    @GetMapping("/posts/{postId}/comments")    //특정 게시물에 있는 댓글 전체 조회
+    public ResponseEntity<List<PostCommentResponseDto>> findByAllComment(@PathVariable Long postId){
         return ResponseEntity.ok(commentService.findByAllComment(postId));
     }
 
-    @PutMapping("/post/{postId}/comment/{commentId}")    // 특정 게시물 수정
+    @PutMapping("/posts/{postId}/comments/{commentId}")    // 특정 게시물 수정
     public ResponseEntity<PostCommentResponseDto> modifyComment(@RequestBody PostCommentRequestDto commentReqDto,
                                                                 @PathVariable Long postId,
                                                                 @PathVariable Long commentId) {
         return ResponseEntity.ok(commentService.modifyComment(commentReqDto, postId, commentId));
     }
 
-    @DeleteMapping("/post/{postId}/comment/{commentId}")
+    @DeleteMapping("/posts/{postId}/comments/{commentId}")
     public ResponseEntity deleteComment(@PathVariable Long postId,
                                         @PathVariable Long commentId) {
         return ResponseEntity.ok(commentService.deleteComment(postId, commentId));

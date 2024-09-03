@@ -4,19 +4,22 @@ import com.sparta.newsfeed.dto.post.PostRequestDto;
 import com.sparta.newsfeed.dto.post.PostResponseDto;
 import com.sparta.newsfeed.service.PostService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.awt.*;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
 public class PostController {
-
     private final PostService postService;
-
-//     게시물 올리기
-    @PostMapping("/posts/{id}")
-    public void createPost(@PathVariable("id") long userId, @RequestBody PostRequestDto requestDto) {
-        postService.createPost(userId, requestDto);
+    // 게시물 올리기
+    @PostMapping(value = "/posts/{id}")
+    public void createPost(@PathVariable("id") long userId,  @RequestPart("requestDto") PostRequestDto requestDto, @RequestPart("multipartFile") List<MultipartFile> multipartFile) {
+        postService.createPost(userId, requestDto, multipartFile);
     }
 
     // 게시물 조회

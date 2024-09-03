@@ -6,6 +6,5 @@ import java.util.List;
 
 @Getter
 public class PostRequestDto {
-    private List<String> imageUrl;
     private String content;
 }
