@@ -45,13 +45,6 @@ public class PostService {
 
     }
 
-//    public PostResponseDto getPost(long postId) {
-//        // find the post
-//        Post post = postRepository.findById(postId).orElseThrow();
-//        // get the corresponding image of the post
-//        Image image = imageRepository.findByTypeAndItemId(Type.POST, post.getId()).orElseThrow();
-//        return new PostResponseDto(post, image.getImageUrl());
-//    }
 
     public PostResponseDto getPost(long postId) {
         // find the post
