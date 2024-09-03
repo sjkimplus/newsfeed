@@ -1,54 +1,37 @@
 package com.sparta.newsfeed.entity.like;
 
-import com.sparta.newsfeed.dto.like.LikeRequestDto;
-import com.sparta.newsfeed.entity.Post;
-import com.sparta.newsfeed.entity.PostComment;
-import com.sparta.newsfeed.entity.Timestamped;
 import com.sparta.newsfeed.entity.User;
-import com.sparta.newsfeed.entity.alarm.Alarm;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "like")
+@Table(name = "likes")
 @NoArgsConstructor
-public class Like extends Timestamped {
+public class Like{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column
+
+    @Column(name = "type", nullable = false)
     @Enumerated(value = EnumType.STRING)
     private LikeTypeEnum type;
-    @Column
+
+    @Column(name = "itemId", nullable = false)
     private Long itemId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
-    /* 긴가민가
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id")
-    private Post post;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "postcomment_id")
-    private PostComment postComment;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "alarm_id")
-    private Alarm alarm;
-    */
-
-    public Like(LikeRequestDto requestDto, User user) {
-        if (requestDto.getType()) {
+    public Like(Boolean type, Long itemId, User user) {
+        if (type) {
             this.type = LikeTypeEnum.POST;
         } else {
             this.type = LikeTypeEnum.COMMENT;
         }
-        this.itemId = requestDto.getItemId();
+        this.itemId = itemId;
         this.user = user;
     }
 }

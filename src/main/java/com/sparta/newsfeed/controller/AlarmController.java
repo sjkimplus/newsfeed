@@ -14,13 +14,15 @@ public class AlarmController {
 
     private final AlarmService alarmService;
 
-    @GetMapping("/api/users/{userId}/alarms")
-    public List<AlarmResponseDto> getAlarms(@PathVariable Long userId) {
+    @GetMapping("/api/alarms")
+    public List<AlarmResponseDto> getAlarms(@RequestParam("userId") Long userId) {
         return alarmService.getAlarms(userId);
     }
 
-    @DeleteMapping("/api/users/{user_id}/like/delete/{alarm_id}")
-    public void deleteAlarm(@PathVariable Long user_id, @PathVariable Long alarm_id) {
-        alarmService.deleteAlarm(user_id, alarm_id);
+    @DeleteMapping("/api/alarms")
+    public void deleteAlarm(
+            @RequestParam("userId") Long userId,
+            @RequestParam("alarmId") Long alarmId) {
+        alarmService.deleteAlarm(userId, alarmId);
     }
 }
