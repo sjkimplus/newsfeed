@@ -8,7 +8,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @Getter
-@Setter // 나중에 없에기
 @Table(name = "users")
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)

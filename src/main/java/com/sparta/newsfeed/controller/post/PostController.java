@@ -13,17 +13,16 @@ public class PostController {
 
     private final PostService postService;
 
-    // 게시물 올리기
-//    @PostMapping("/posts/{id}")
-//    public void createPost(@PathVariable("id") long userId, @RequestBody PostRequestDto requestDto) {
-//        postService.createPost(userId, requestDto);
-//    }
+//     게시물 올리기
+    @PostMapping("/posts/{id}")
+    public void createPost(@PathVariable("id") long userId, @RequestBody PostRequestDto requestDto) {
+        postService.createPost(userId, requestDto);
+    }
 
     // 게시물 조회
     @GetMapping("/posts/{id}")
     public PostResponseDto getPost(@PathVariable("id") long postId) {
-        PostResponseDto responseDto = postService.getPost(postId);
-        return responseDto;
+        return postService.getPost(postId);
     }
 
     // 게시물 수정
