@@ -1,6 +1,5 @@
 package com.sparta.newsfeed.entity.alarm;
 
-import com.sparta.newsfeed.dto.alarm.AlarmRequestDto;
 import com.sparta.newsfeed.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -24,13 +23,9 @@ public class Alarm {
     @JoinColumn(name = "user_id")
     private User user;
 
-    public Alarm(AlarmRequestDto requestDto, User user) {
-        if (requestDto.getType()) {
-            this.type = AlarmTypeEnum.COMMENT;
-        } else {
-            this.type = AlarmTypeEnum.LIKE;
-        }
-        this.itemId = requestDto.getItemId();
+    public Alarm(AlarmTypeEnum type, Long itemId, User user) {
+        this.type = type;
+        this.itemId = itemId;
         this.user = user;
     }
 }
