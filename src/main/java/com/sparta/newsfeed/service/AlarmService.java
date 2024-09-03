@@ -30,6 +30,8 @@ public class AlarmService {
     public AlarmResponseDto addAlarms(Long userId, AlarmTypeEnum type, Long itemId) {
         // 유저 존재 확인
         Alarm alarm = new Alarm(type, itemId, findUserId(userId));
+        // type itemID 존재 확인
+        findTypeItemId(type, itemId);
         // 알림 저장
         alarmRepository.save(alarm);
         return new AlarmResponseDto(alarm);
@@ -70,16 +72,29 @@ public class AlarmService {
             case COMMENT -> {
                 return findUserId(
                         postCommentRepository.findById(itemId)
-                                .orElseThrow(() -> new NullPointerException("해당 ID의 유저가 없습니다."))
+                                .orElseThrow(() -> new NullPointerException("해당 ID의 댓글이 없습니다."))
                                 .getUserId()).getName();
             }
             case LIKE -> {
                 return likeRepository.findById(itemId)
-                        .orElseThrow(() -> new NullPointerException("해당 ID의 유저가 없습니다."))
+                        .orElseThrow(() -> new NullPointerException("해당 ID의 좋아요가 없습니다."))
                         .getUser().getName();
             }
             default -> {
                 return null;
+            }
+        }
+    }
+    // type itemID 존재 확인
+    private void findTypeItemId(AlarmTypeEnum type, Long itemId) {
+        switch (type) {
+            case COMMENT -> {
+                postCommentRepository.findById(itemId)
+                        .orElseThrow(() -> new NullPointerException("해당 ID의 댓글이 없습니다."));
+            }
+            case LIKE -> {
+                likeRepository.findById(itemId)
+                        .orElseThrow(() -> new NullPointerException("해당 ID의 좋아요가 없습니다."));
             }
         }
     }
