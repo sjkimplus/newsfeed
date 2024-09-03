@@ -27,10 +27,11 @@ public class LikeService {
         // 좋아요 생성
         Like like = new Like(type, itemId, user);
         // 이미 좋아요있는지 확인
-        if (findTypeItemId(type, itemId).getUser().getId().equals(userId)) {
+        if (findTypeItemId(type, itemId) == null) {
+            likeRepository.save(like);
+        } else if (findTypeItemId(type, itemId).getUser().getId().equals(userId)) {
             throw new IllegalArgumentException("이미 좋아요를 눌렀습니다.");
         }
-        likeRepository.save(like);
 
         return new LikeResponseDto(like);
     }
