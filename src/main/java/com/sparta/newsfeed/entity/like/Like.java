@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Table(name = "likes")
 @NoArgsConstructor
-public class Like{
+public class Like extends LikeCreatedTimestamped {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -26,11 +26,7 @@ public class Like{
     private User user;
 
     public Like(Boolean type, Long itemId, User user) {
-        if (type) {
-            this.type = LikeTypeEnum.POST;
-        } else {
-            this.type = LikeTypeEnum.COMMENT;
-        }
+        this.type = type ? LikeTypeEnum.POST : LikeTypeEnum.COMMENT;
         this.itemId = itemId;
         this.user = user;
     }
