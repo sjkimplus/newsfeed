@@ -2,13 +2,9 @@ package com.sparta.newsfeed.service;
 
 import com.sparta.newsfeed.dto.post.PostRequestDto;
 import com.sparta.newsfeed.dto.post.PostResponseDto;
-import com.sparta.newsfeed.entity.Image;
-import com.sparta.newsfeed.entity.Post;
-import com.sparta.newsfeed.entity.Type;
-import com.sparta.newsfeed.entity.User;
-import com.sparta.newsfeed.repository.ImageRepository;
-import com.sparta.newsfeed.repository.PostRepository;
-import com.sparta.newsfeed.repository.UserRepository;
+import com.sparta.newsfeed.entity.*;
+import com.sparta.newsfeed.entity.like.LikeTypeEnum;
+import com.sparta.newsfeed.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,7 +12,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.List;
 
+import static com.sparta.newsfeed.entity.Type.POST;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +23,8 @@ public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final ImageRepository imageRepository;
+    private final LikeRepository likeRepository;
+    private final PostCommentRepository postCommentRepository;
 
     public void createPost(long userId, PostRequestDto requestDto, List<MultipartFile> multipartFile) {
         // find user
@@ -45,6 +45,14 @@ public class PostService {
 
     }
 
+//    public PostResponseDto getPost(long postId) {
+//        // find the post
+//        Post post = postRepository.findById(postId).orElseThrow();
+//        // get the corresponding image of the post
+//        Image image = imageRepository.findByTypeAndItemId(Type.POST, post.getId()).orElseThrow();
+//        return new PostResponseDto(post, image.getImageUrl());
+//    }
+
     public PostResponseDto getPost(long postId) {
         // find the post
         Post post = postRepository.findById(postId).orElseThrow();
@@ -60,5 +68,6 @@ public class PostService {
 
         // Create and return the PostResponseDto with the collected image URLs
         return new PostResponseDto(post, imageUrls);
+
     }
 }

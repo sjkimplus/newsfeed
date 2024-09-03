@@ -19,7 +19,7 @@ public class PostCommentController {
 
     @PostMapping("/posts/{postId}/comments")    // 댓글 작성
     public ResponseEntity<PostCommentResponseDto> createdComment(@RequestBody PostCommentRequestDto commentReqDto,
-                                                                 @PathVariable Long postId){
+                                                                 @PathVariable Long postId) {
         return ResponseEntity.ok(commentService.createdComment(commentReqDto, postId));
     }
 
@@ -31,13 +31,13 @@ public class PostCommentController {
     @PutMapping("/posts/{postId}/comments/{commentId}")    // 특정 게시물 수정
     public ResponseEntity<PostCommentResponseDto> modifyComment(@RequestBody PostCommentRequestDto commentReqDto,
                                                                 @PathVariable Long postId,
-                                                                @PathVariable Long commentId){
+                                                                @PathVariable Long commentId) {
         return ResponseEntity.ok(commentService.modifyComment(commentReqDto, postId, commentId));
     }
 
     @DeleteMapping("/posts/{postId}/comments/{commentId}")
     public ResponseEntity deleteComment(@PathVariable Long postId,
-                                        @PathVariable Long commentId){
+                                        @PathVariable Long commentId) {
         return ResponseEntity.ok(commentService.deleteComment(postId, commentId));
     }
 }

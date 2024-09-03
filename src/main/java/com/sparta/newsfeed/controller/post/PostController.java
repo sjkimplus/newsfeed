@@ -21,11 +21,11 @@ public class PostController {
     public void createPost(@PathVariable("id") long userId,  @RequestPart("requestDto") PostRequestDto requestDto, @RequestPart("multipartFile") List<MultipartFile> multipartFile) {
         postService.createPost(userId, requestDto, multipartFile);
     }
+
     // 게시물 조회
     @GetMapping("/posts/{id}")
     public PostResponseDto getPost(@PathVariable("id") long postId) {
-        PostResponseDto responseDto = postService.getPost(postId);
-        return responseDto;
+        return postService.getPost(postId);
     }
 
     // 게시물 수정
