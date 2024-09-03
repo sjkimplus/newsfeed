@@ -1,6 +1,7 @@
 package com.sparta.newsfeed.controller;
 
 import com.sparta.newsfeed.dto.alarm.AlarmResponseDto;
+import com.sparta.newsfeed.dto.alarm.AlarmTextResponseDto;
 import com.sparta.newsfeed.entity.alarm.AlarmTypeEnum;
 import com.sparta.newsfeed.service.AlarmService;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,7 @@ public class AlarmController {
     }
 
     @GetMapping("/api/alarms") // 알림 다건 조회
-    public List<AlarmResponseDto> getAlarms(@RequestParam("userId") Long userId) {
+    public List<AlarmTextResponseDto> getAlarms(@RequestParam("userId") Long userId) {
         return alarmService.getAlarms(userId);
     }
 
