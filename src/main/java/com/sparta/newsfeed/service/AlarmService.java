@@ -20,6 +20,9 @@ public class AlarmService {
     private final UserRepository userRepository;
 
     public List<AlarmResponseDto> getAlarms(Long userId) {
+        // 유저 존재 확인
+        userRepository.findById(userId).orElseThrow(() -> new NullPointerException("해당 유저ID가 없습니다."));
+        // 유저 Id와 일치하는 alarmList 반환
         List<Alarm> alarmList = alarmRepository.findAllByUserId(userId);
         return alarmList.stream().map(AlarmResponseDto::new).toList();
     }
