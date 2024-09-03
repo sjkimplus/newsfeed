@@ -21,7 +21,7 @@ public class LikeService {
     private final UserRepository userRepository;
 
     @Transactional
-    public LikeResponseDto addLike(Long userId, Boolean type, Long itemId) {
+    public LikeResponseDto addLike(Long userId, LikeTypeEnum type, Long itemId) {
         // 유저 존재 확인
         User user = findUserId(userId);
         // 좋아요 생성
@@ -37,29 +37,29 @@ public class LikeService {
     }
 
     @Transactional
-    public void deleteLike(Long userId, Boolean type, Long itemId) {
+    public void deleteLike(Long userId, LikeTypeEnum type, Long itemId) {
         // 유저 존재 확인
         User user = findUserId(userId);
         // 좋아요 삭제
         likeRepository.delete(findTypeItemId(type, itemId));
     }
 
-    public List<LikeResponseDto> getLikes(Long userId, Boolean type) {
+    public List<LikeResponseDto> getLikes(Long userId, LikeTypeEnum type) {
         List<Like> likeList;
         if (type == null) {
             // type null 일때 전체 조회
             likeList = likeRepository.findAllByUserOrderByCreateAtDesc(findUserId(userId));
         } else {
             // type 에 따라 post/comment 다건 조회
-            likeList = likeRepository.findAllByUserAndTypeOrderByCreateAtDesc(findUserId(userId), type ? LikeTypeEnum.POST : LikeTypeEnum.COMMENT);
+            likeList = likeRepository.findAllByUserAndTypeOrderByCreateAtDesc(findUserId(userId), type);
         }
         return likeList.stream().map(LikeResponseDto::new).toList();
     }
 
 
     // type, itemId 로 Like 가져오기 메서드
-    public Like findTypeItemId(Boolean type, Long itemId) {
-        return likeRepository.findByTypeAndItemId(type ? LikeTypeEnum.POST : LikeTypeEnum.COMMENT, itemId);
+    public Like findTypeItemId(LikeTypeEnum type, Long itemId) {
+        return likeRepository.findByTypeAndItemId(type, itemId);
     }
 
     // userId로 User 가져오기 메서드

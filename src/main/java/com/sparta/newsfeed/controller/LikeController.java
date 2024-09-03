@@ -1,6 +1,8 @@
 package com.sparta.newsfeed.controller;
 
 import com.sparta.newsfeed.dto.like.LikeResponseDto;
+import com.sparta.newsfeed.entity.like.Like;
+import com.sparta.newsfeed.entity.like.LikeTypeEnum;
 import com.sparta.newsfeed.service.LikeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +18,7 @@ public class LikeController {
     @PostMapping("/api/likes") // 좋아요 추가
     public LikeResponseDto addLike(
             @RequestParam("userId") Long userId,
-            @RequestParam("type") Boolean type,
+            @RequestParam("type") LikeTypeEnum type,
             @RequestParam("itemId") Long itemId) {
         return likeService.addLike(userId, type, itemId);
     }
@@ -24,7 +26,7 @@ public class LikeController {
     @DeleteMapping("/api/likes") // 좋아요 취소
     public void deleteLike(
             @RequestParam("userId") Long userId,
-            @RequestParam("type") Boolean type,
+            @RequestParam("type") LikeTypeEnum type,
             @RequestParam("itemId") Long itemId) {
         likeService.deleteLike(userId, type, itemId);
     }
@@ -32,7 +34,7 @@ public class LikeController {
     @GetMapping("/api/likes") // 좋아요 다건 조회
     public List<LikeResponseDto> getLikes(
             @RequestParam("userId") Long userId,
-            @RequestParam(name = "type", required = false) Boolean type) {
+            @RequestParam(name = "type", required = false) LikeTypeEnum type) {
         return likeService.getLikes(userId, type);
     }
 }
