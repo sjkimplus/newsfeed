@@ -24,8 +24,6 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    private final String passwordPrefix = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
-
     public UserResponseDto create(UserRequestDto userRequestDto){
         String password = passwordEncoder.encode(userRequestDto.getPassword());
         String email = userRequestDto.getEmail();;
