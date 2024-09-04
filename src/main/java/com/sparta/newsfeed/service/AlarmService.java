@@ -27,9 +27,9 @@ public class AlarmService {
     private final LikeRepository likeRepository;
 
     @Transactional
-    public AlarmResponseDto addAlarms(Long userId, AlarmTypeEnum type, Long itemId) {
+    public AlarmResponseDto addAlarms(String userEmail, AlarmTypeEnum type, Long itemId) {
         // 유저 존재 확인
-        Alarm alarm = new Alarm(type, itemId, findUserId(userId));
+        Alarm alarm = new Alarm(type, itemId, findUserEmail(userEmail));
         // type itemID 존재 확인
         findTypeItemId(type, itemId);
         // 알림 저장
@@ -37,13 +37,11 @@ public class AlarmService {
         return new AlarmResponseDto(alarm);
     }
 
-    public List<AlarmTextResponseDto> getAlarms(Long userId) {
+    public List<AlarmTextResponseDto> getAlarms(String userEmail) {
         // 본인 확인
-
-        // 유저 존재 확인
-        findUserId(userId);
+        User user = findUserEmail(userEmail);
         // 유저 Id와 일치하는 alarmList 반환
-        List<Alarm> alarmList = alarmRepository.findAllByUserIdOrderByIdDesc(userId);
+        List<Alarm> alarmList = alarmRepository.findAllByUserIdOrderByIdDesc(user.getId());
         List<AlarmTextResponseDto> dtoList = new ArrayList<>();
         for (Alarm alarm : alarmList) {
             AlarmTextResponseDto dto = new AlarmTextResponseDto(alarm, alarmGetName(alarm.getType(), alarm.getItemId()));
@@ -53,9 +51,9 @@ public class AlarmService {
     }
 
     @Transactional
-    public void deleteAlarm(Long alarmId) {
+    public void deleteAlarm(String userEmail, Long alarmId) {
         // 본인 확인
-
+        findUserEmail(userEmail);
         // 알림 삭제
         alarmRepository.delete(alarmRepository.findById(alarmId).orElseThrow(() -> new NullPointerException("해당 ID의 알림이 없습니다")));
     }
@@ -64,6 +62,10 @@ public class AlarmService {
     // 유저 존재 확인 메서드
     public User findUserId(Long userId) {
         return userRepository.findById(userId).orElseThrow(() -> new NullPointerException("해당 ID의 유저가 없습니다."));
+    }
+
+    public User findUserEmail(String userEmail) {
+        return userRepository.findByEmail(userEmail).orElseThrow(() -> new NullPointerException("없는 유저ID입니다."));
     }
 
     // 알림 보낸사람 이름 확인 메서드
@@ -85,6 +87,7 @@ public class AlarmService {
             }
         }
     }
+
     // type itemID 존재 확인
     private void findTypeItemId(AlarmTypeEnum type, Long itemId) {
         switch (type) {
