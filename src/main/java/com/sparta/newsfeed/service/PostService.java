@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static com.sparta.newsfeed.entity.Type.POST;
 
@@ -28,6 +29,7 @@ public class PostService {
     private final LikeRepository likeRepository;
     private final PostCommentRepository postCommentRepository;
     private final FileUtils fileUtils;
+
     public PostResponseDto createPost(long userId, PostRequestDto requestDto, List<MultipartFile> multipartFiles) throws Exception {
         // 사용자 찾기
         User user = userRepository.findById(userId).orElseThrow();

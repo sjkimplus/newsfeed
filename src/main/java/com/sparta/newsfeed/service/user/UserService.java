@@ -13,12 +13,14 @@ import com.sparta.newsfeed.repository.UserRepository;
 import com.sparta.newsfeed.utile.FileUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +39,8 @@ public class UserService {
 
     private final String passwordPrefix = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
     private final FileUtils fileUtils;
-
+    @Value("${file.upload.path}")
+    private String filePath;
     public UserResponseDto create(UserRequestDto userRequestDto) {
         String password = passwordEncoder.encode(userRequestDto.getPassword());
         String email = userRequestDto.getEmail();
@@ -64,9 +67,9 @@ public class UserService {
 
         List<String> saveUserImage = new ArrayList<>();
         List<Image> byTypeAndItemId = imageRepository.findByTypeAndItemId(USER, user.getId());
-        for (Image image : byTypeAndItemId) {
-            saveUserImage.addAll(image.getImageUrl());
-        }
+//        for (Image image : byTypeAndItemId) {
+//            saveUserImage.addAll(image.getImageUrl());
+//        }
 
         String token = jwtUtil.createToken(user.getEmail());
         jwtUtil.addJwtToCookie(token, httpServletResponse);
@@ -149,7 +152,7 @@ public class UserService {
             }
             return imagePaths;  // 이미지 URL 리스트 반환
         }
-        throw new IllegalArgumentException("사진 1개만 등록 가능합니다.");
+        throw new IllegalArgumentException("");
     }
 
     @Transactional
@@ -164,6 +167,8 @@ public class UserService {
 
             // 이미지 리스트 순회하여 업데이트
             for (Image image : images) {
+                File file =  new File(filePath + image.getImageUrl());
+                System.out.println("file.getPath() = " + file.getPath());
                 Image byIdAndType = imageRepository.findByIdAndType(image.getId(), USER);
                 if (byIdAndType != null) {
                     byIdAndType.updateImageUrl(list); // 이미지 URL 업데이트
@@ -175,7 +180,7 @@ public class UserService {
             // multipartFile이 없거나 빈 값일 경우, 이미지 삭제 처리
             List<Image> imagesToDelete = imageRepository.findByItemId(user.getId());
             for (Image image : imagesToDelete) {
-                imageRepository.deleteByIdAndType(image.getId(), USER);
+                imageRepository.delete(image);
             }
         }
 
