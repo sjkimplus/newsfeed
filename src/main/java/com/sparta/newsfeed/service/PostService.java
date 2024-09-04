@@ -5,19 +5,18 @@ import com.sparta.newsfeed.dto.post.PostResponseDto;
 import com.sparta.newsfeed.entity.*;
 import com.sparta.newsfeed.entity.like.LikeTypeEnum;
 import com.sparta.newsfeed.repository.*;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.List;
-
-import static com.sparta.newsfeed.entity.Type.POST;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class PostService {
 
     private final PostRepository postRepository;
@@ -34,7 +33,6 @@ public class PostService {
         Post post = new Post(user, requestDto.getContent());
         postRepository.save(post);
 
-
         for (MultipartFile imgUrl : multipartFile){
             // insert image
             if (!imgUrl.isEmpty()) {
@@ -42,7 +40,6 @@ public class PostService {
                 imageRepository.save(img);
             }
         }
-
     }
 
 
@@ -59,8 +56,19 @@ public class PostService {
             imageUrls.addAll(file.getImageUrl()); // Add all image URLs to the list
         }
 
-        // Create and return the PostResponseDto with the collected image URLs
-        return new PostResponseDto(post, imageUrls);
+        // get the number of likes
+        Long likeCount = likeRepository.countByTypeAndItemId(LikeTypeEnum.POST, postId);
 
+        // get the comments
+        List<PostComment> comments = postCommentRepository.findAllByPostId(postId);
+
+        // Create and return the PostResponseDto with the collected image URLs
+        return new PostResponseDto(post, imageUrls, likeCount, comments);
+    }
+
+    public void updatePost(long postId, String content) {
+        Post post = postRepository.findById(postId).orElseThrow(() ->
+                new EntityNotFoundException("게시물을 찾을 수 없습니다."));
+        post.updatePost(content);
     }
 }

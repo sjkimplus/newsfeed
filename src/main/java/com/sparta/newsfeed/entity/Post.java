@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 @Getter
-@Setter
 public class Post {
 
     @Id
@@ -40,5 +39,9 @@ public class Post {
     public Post(User user, String content) {
         this.user = user;
         this.content = content;
+    }
+
+    public void updatePost(String text) {
+        this.content = text;
     }
 }
