@@ -66,9 +66,13 @@ public class PostService {
         return new PostResponseDto(post, imageUrls, likeCount, comments);
     }
 
-    public void updatePost(long postId, String content) {
+    public void updatePost(long postId, PostRequestDto requestDto) {
         Post post = postRepository.findById(postId).orElseThrow(() ->
                 new EntityNotFoundException("게시물을 찾을 수 없습니다."));
-        post.updatePost(content);
+        post.updatePost(requestDto.getContent());
+    }
+
+    public void deletePost(long postId) {
+        postRepository.deleteById(postId);
     }
 }

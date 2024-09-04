@@ -30,13 +30,15 @@ public class PostController {
 
     // 게시물 수정
     @PutMapping("/posts/{postId}")
-    public void updatePost(@PathVariable("postId") long postId, @RequestParam("id") String content) {
-        postService.updatePost(postId, content);
+    public void updatePost(@PathVariable("postId") long postId, @RequestPart("requestDto") PostRequestDto requestDto) {
+        postService.updatePost(postId, requestDto);
     }
 
     // 게시물 삭제
-
-
-    // 게시물
+    @DeleteMapping("/posts/{postId}")
+    public void deletePost(@PathVariable("postId") long postId) {
+        postService.deletePost(postId);
+    }
+    // 게시물 다건 조회
 
 }
