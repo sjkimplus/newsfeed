@@ -42,7 +42,6 @@ public class FileController {
 
                 byte[] buffer = new byte[1024];
                 int bytesRead;
-
                 // 파일을 클라이언트에게 전송
                 while ((bytesRead = in.read(buffer)) != -1) {
                     outStream.write(buffer, 0, bytesRead);

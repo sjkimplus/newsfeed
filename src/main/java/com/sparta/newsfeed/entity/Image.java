@@ -3,16 +3,12 @@ package com.sparta.newsfeed.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.lang.Nullable;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Entity
@@ -43,7 +39,7 @@ public class Image {
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime createAt;
 
-    public Image(Long itemId, Type type, String imageUrl){
+    public Image(Long itemId, Type type, String imageUrl) {
         this.itemId = itemId;
         this.type = type;
         this.imageUrl.add(imageUrl);
@@ -51,6 +47,24 @@ public class Image {
 
     public void addImageUrl(String url) {
         this.imageUrl.add(url);
+    }
+
+    public void updateImageUrl(List<String> usersImage) {
+        imageUrl.removeAll(this.getImageUrl());
+        for (String updateImage : usersImage) {
+            this.imageUrl.add(updateImage);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "Image{" +
+                "id=" + id +
+                ", itemId=" + itemId +
+                ", type=" + type +
+                ", imageUrl=" + imageUrl +
+                ", createAt=" + createAt +
+                '}';
     }
 }
 

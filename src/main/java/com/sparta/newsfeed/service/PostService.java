@@ -29,8 +29,6 @@ public class PostService {
     private final LikeRepository likeRepository;
     private final PostCommentRepository postCommentRepository;
     private final FileUtils fileUtils;
-    @Value("${file.upload.path}")
-    private String filePath;
     public List<String> createPost(long userId, PostRequestDto requestDto, List<MultipartFile> multipartFiles) throws Exception {
         // 사용자 찾기
         User user = userRepository.findById(userId).orElseThrow();

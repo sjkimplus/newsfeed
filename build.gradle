@@ -33,6 +33,17 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 //	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'at.favre.lib:bcrypt:0.10.2'
+	implementation 'org.json:json:20230227'
+	// JWT
+	compileOnly group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.5'
+	runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.5'
+	runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.5'
+	implementation("org.openapitools:jackson-databind-nullable:0.2.4")   // 의존성 추가
+
 }
 
 tasks.named('test') {
