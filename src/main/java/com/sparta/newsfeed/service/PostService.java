@@ -17,6 +17,7 @@ import java.util.*;
 import java.util.List;
 
 import static com.sparta.newsfeed.entity.Type.POST;
+import static com.sparta.newsfeed.entity.Type.USER;
 
 @Service
 @RequiredArgsConstructor
@@ -30,27 +31,26 @@ public class PostService {
     private final FileUtils fileUtils;
     @Value("${file.upload.path}")
     private String filePath;
-    public List<String> createPost(long userId, PostRequestDto requestDto, List<MultipartFile> multipartFile) throws Exception{
-        // find user
+    public List<String> createPost(long userId, PostRequestDto requestDto, List<MultipartFile> multipartFiles) throws Exception {
+        // 사용자 찾기
         User user = userRepository.findById(userId).orElseThrow();
 
-        // make post
+        // 게시물 생성
         Post post = new Post(user, requestDto.getContent());
         postRepository.save(post);
 
-        List<String> list = fileUtils.parseInsertFileInfo(multipartFile);
+        // 파일 저장 및 이미지 URL 리스트 생성
+        List<String> imagePaths = fileUtils.parseInsertFileInfo(multipartFiles, POST);
 
-
-        for (String imgUrl : list) {
-            // insert image
-            if (!imgUrl.isEmpty()) {
-                Image img = new Image(post.getId(), Type.POST, imgUrl);
+        for (String imagePath : imagePaths) {
+            // 이미지 URL을 DB에 저장
+            if (!imagePath.isEmpty()) {
+                Image img = new Image(post.getId(), Type.POST, imagePath);
                 imageRepository.save(img);
             }
         }
-        return list;
+        return imagePaths;  // 이미지 URL 리스트 반환
     }
-
 
     public PostResponseDto getPost(long postId) {
         // find the post

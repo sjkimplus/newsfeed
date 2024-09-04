@@ -1,5 +1,6 @@
 package com.sparta.newsfeed.utile;
 
+import com.sparta.newsfeed.entity.Type;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -8,7 +9,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Component
@@ -17,42 +17,38 @@ public class FileUtils {
     @Value("${file.upload.path}")
     private String filePath;
 
-    @Value("${server.host:http://localhost}")  // 기본 호스트 (필요에 따라 수정)
-    private String host;
+    public String getBaseFilePath() {
+        return filePath;
+    }
 
-    @Value("${server.port:8080}")  // 기본 포트
-    private String port;
-
-    public List<String> parseInsertFileInfo(List<MultipartFile> mpFiles) throws IOException {
-        List<String> fullUrls = new ArrayList<>();
+    public List<String> parseInsertFileInfo(List<MultipartFile> mpFiles, Type type) throws IOException {
+        List<String> filePaths = new ArrayList<>();
 
         for (MultipartFile multipartFile : mpFiles) {
             if (!multipartFile.isEmpty()) {
                 String originalFileName = multipartFile.getOriginalFilename();
                 String storedFileName = getRandomString() + "_" + originalFileName;
 
-                // 프로젝트 경로와 파일 경로를 결합하여 최종 경로 생성
-                String projectPath = System.getProperty("user.dir") + filePath;
-                File saveDir = new File(projectPath);
+                // 파일을 저장할 경로 설정
+                String projectPath = System.getProperty("user.dir") + filePath +"\\"+ type;
 
-//                if (!saveDir.exists()) {
-//                    saveDir.mkdirs();
-//                }
-
-                File saveFile = new File(saveDir, storedFileName);
-
-                // 파일 저장
+                File saveFile = new File(projectPath, storedFileName);
+                if (!saveFile.exists()) {
+                    saveFile.mkdirs();  // 디렉토리가 존재하지 않으면 생성
+                }
                 multipartFile.transferTo(saveFile);
+                System.out.println("Saved file path: " + saveFile.getAbsolutePath());  // 저장된 파일의 경로를 출력
 
-                // 파일의 HTTP URL 생성
-                String fileUrl = host + ":" + port + "/files/" + storedFileName;
-                fullUrls.add(fileUrl);
+
+                // 저장된 파일의 상대 경로를 리스트에 추가
+                String relativePath = "/files/"+ type +"/"+ storedFileName;
+                filePaths.add(relativePath);
             }
         }
-        return fullUrls;
+        return filePaths;  // 저장된 파일의 상대 경로들을 반환
     }
 
-    public static String getRandomString() {
+    private String getRandomString() {
         return UUID.randomUUID().toString().replaceAll("-", "");
     }
 }
