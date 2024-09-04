@@ -34,7 +34,6 @@ public class UserController {
     public ResponseEntity<UserResponseDto> login(@Valid @RequestBody LoginRequestDto loginRequestDto, HttpServletResponse httpServletResponse) {
         return ResponseEntity.ok(userService.login(jwtUtil, loginRequestDto, httpServletResponse));
     }
-
     @PutMapping("/users/{email}")
     public ResponseEntity<UserResponseDto> update(@CookieValue(JwtUtil.AUTHORIZATION_HEADER) String tokenValue,
                                                   @PathVariable String email,
