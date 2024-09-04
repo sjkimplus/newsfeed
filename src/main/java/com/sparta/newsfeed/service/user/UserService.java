@@ -34,14 +34,11 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     private final ImageRepository imageRepository;
-
-    private final String passwordPrefix = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
     private final FileUtils fileUtils;
 
-    public UserResponseDto create(UserRequestDto userRequestDto) {
+    public UserResponseDto create(UserRequestDto userRequestDto){
         String password = passwordEncoder.encode(userRequestDto.getPassword());
         String email = userRequestDto.getEmail();
-        ;
         Optional<User> checkEmail = userRepository.findByEmail(email);
         if (checkEmail.isPresent()) throw new IllegalArgumentException("중복된 아이디 입니다.");
 
