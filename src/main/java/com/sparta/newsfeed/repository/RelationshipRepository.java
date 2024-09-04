@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface RelationshipRepository extends JpaRepository<Relationship, Long> {
     Optional<Relationship> findBySentUserAndReceivedUser(User sentUser, User receivedUser);
     void deleteBySentUserAndReceivedUser(User sentUser, User receivedUser);
+    void deleteBySentUserIdOrReceivedUserId(Long sentUserId, Long receivedUserId);
 }
