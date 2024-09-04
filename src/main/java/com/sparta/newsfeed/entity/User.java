@@ -64,4 +64,17 @@ public class User extends Timestamped{
         this.dateDeleted = deleteTime;
     }
 
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", name='" + name + '\'' +
+                ", birthday='" + birthday + '\'' +
+                ", dateDeleted=" + dateDeleted +
+                ", sentRelationshipList=" + sentRelationshipList +
+                ", receivedRelationshipList=" + receivedRelationshipList +
+                '}';
+    }
 }

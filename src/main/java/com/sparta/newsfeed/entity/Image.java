@@ -31,6 +31,7 @@ public class Image {
     private Type type;
 
     @ElementCollection
+    @CollectionTable(name = "image_urls", joinColumns = @JoinColumn(name = "image_id"))
     @Column(name = "image_url")
     private List<String> imageUrl = new ArrayList<>();
 
