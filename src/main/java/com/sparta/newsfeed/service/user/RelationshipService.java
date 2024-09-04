@@ -10,9 +10,11 @@ import com.sparta.newsfeed.entity.relation.RelationshipStatusEnum;
 import com.sparta.newsfeed.repository.RelationshipRepository;
 import com.sparta.newsfeed.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,31 +27,29 @@ public class RelationshipService {
 
     @Transactional
     public String create(String sentEmail, String receivedEmail){
-        Optional<User> sentUser = findUser(sentEmail);
-        if(sentUser.isEmpty()) throw new IllegalArgumentException("존재하지 않는 아이디 입니다");
-        Optional<User> receivedUser = findUser(receivedEmail);
-        if(receivedUser.isEmpty()) throw new IllegalArgumentException("존재하지 않는 아이디 입니다");
+
+        //0 - sentUser, 1 - receivedUser
+        List<User> users = checkUser(sentEmail, receivedEmail);
 
         //데이터 중복 방지
-        if(findRelationship(sentUser.get(), receivedUser.get()).isPresent()) throw new IllegalArgumentException("이미 친구 추가 요청을 보냈습니다.");
+        if(findRelationship(users.get(0), users.get(1)).isPresent()) throw new IllegalArgumentException("이미 친구 추가 요청을 보냈습니다.");
 
         //이미 상대방이 친구 요청을 했을경우
-        Optional<Relationship> receivedRelationship = findRelationship(receivedUser.get(), sentUser.get());
+        Optional<Relationship> receivedRelationship = findRelationship(users.get(1), users.get(0));
         if(receivedRelationship.isPresent()) throw new IllegalArgumentException("이미 상대방이 친구 추가 요청을 보냈습니다.");
 
-        Relationship newRelationship = new Relationship(sentUser.get(), receivedUser.get());
+        Relationship newRelationship = new Relationship(users.get(0), users.get(1));
         relationshipRepository.save(newRelationship);
 
         return "친구 요청이 완료되었습니다.";
     }
 
     @Transactional
-    public String updateStatus(String sentEmail, String receivedEmail, RelationshipStatusEnum relationshipStatusEnum){
-        Optional<User> sentUser = findUser(sentEmail);
-        if(sentUser.isEmpty()) throw new IllegalArgumentException("존재하지 않는 아이디 입니다");
-        Optional<User> receivedUser = findUser(receivedEmail);
-        if(receivedUser.isEmpty()) throw new IllegalArgumentException("존재하지 않는 아이디 입니다");
-        Optional<Relationship> relationship = findRelationship(sentUser.get(), receivedUser.get());
+    public String updateStatus(String ownerEmail, String sentEmail, RelationshipStatusEnum relationshipStatusEnum){
+        //0 - sentUser, 1 - receivedUser
+        List<User> users = checkUser(sentEmail, ownerEmail);
+
+        Optional<Relationship> relationship = findRelationship(users.get(0), users.get(1));
         if(relationship.isEmpty()) throw new IllegalArgumentException("존재하지 않는 친구 요청 입니다");
         if(!relationship.get().getStatus().equals(RelationshipStatusEnum.WAITING))
             return  "유저가 " + relationship.get().getStatus() + " 했습니다.";
@@ -60,15 +60,14 @@ public class RelationshipService {
     }
 
     @Transactional
-    public String delete(String sentEmail, String receivedEmail){
-        Optional<User> sentUser = findUser(sentEmail);
-        if(sentUser.isEmpty()) throw new IllegalArgumentException("존재하지 않는 아이디 입니다");
-        Optional<User> receivedUser = findUser(receivedEmail);
-        if(receivedUser.isEmpty()) throw new IllegalArgumentException("존재하지 않는 아이디 입니다");
-        Optional<Relationship> relationship = findRelationship(sentUser.get(), receivedUser.get());
+    public String delete(String ownerEmail, String targetEmail){
+        //0 - sentUser, 1 - receivedUser
+        List<User> users = checkUser(targetEmail, ownerEmail);
+
+        Optional<Relationship> relationship = findRelationship(users.get(0), users.get(1));
         if(relationship.isEmpty()) throw new IllegalArgumentException("친구가 아닙니다.");
 
-        relationshipRepository.deleteBySentUserAndReceivedUser(sentUser.get(), receivedUser.get());
+        relationshipRepository.deleteBySentUserAndReceivedUser(users.get(0), users.get(1));
 
         return "친구 삭제가 완료 되었습니다.";
     }
@@ -79,5 +78,18 @@ public class RelationshipService {
 
     private Optional<User> findUser(String email){
         return userRepository.findByEmail(email);
+    }
+
+    private List<User> checkUser(String sentEmail, String receivedEmail){
+        Optional<User> sentUsers = findUser(sentEmail);
+        Optional<User> receivedUsers = findUser(receivedEmail);
+        if(sentUsers.isEmpty() || sentUsers.get().getDateDeleted() != null) throw new IllegalArgumentException("존재하지 않는 아이디 입니다");
+        if(receivedUsers.isEmpty() || receivedUsers.get().getDateDeleted() != null) throw new IllegalArgumentException("존재하지 않는 아이디 입니다");
+
+        List<User> temp = new ArrayList<>();
+        temp.add(sentUsers.get());
+        temp.add(receivedUsers.get());
+
+        return temp;
     }
 }

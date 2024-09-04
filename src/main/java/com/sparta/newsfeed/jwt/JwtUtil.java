@@ -140,6 +140,10 @@ public class JwtUtil {
         if(!authority.equals(email)) throw new IllegalArgumentException("권한이 없습니다.");
     }
 
+    public void checkAuthByEmail(String ownerEmail, String subjectEmail){
+        if(!ownerEmail.equals(subjectEmail)) throw new IllegalArgumentException("권한이 없습니다.");
+    }
+
     public String getAuthId(String tokenValue){
         // JWT 토큰 substring
         String token = substringToken(tokenValue);
