@@ -4,6 +4,10 @@ import com.sparta.newsfeed.dto.comment.PostCommentRequestDto;
 import com.sparta.newsfeed.dto.comment.PostCommentResponseDto;
 import com.sparta.newsfeed.entity.Post;
 import com.sparta.newsfeed.entity.PostComment;
+import com.sparta.newsfeed.entity.User;
+import com.sparta.newsfeed.entity.alarm.Alarm;
+import com.sparta.newsfeed.entity.alarm.AlarmTypeEnum;
+import com.sparta.newsfeed.repository.AlarmRepository;
 import com.sparta.newsfeed.repository.PostCommentRepository;
 import com.sparta.newsfeed.repository.PostRepository;
 import com.sparta.newsfeed.repository.UserRepository;
@@ -24,18 +28,24 @@ public class PostCommentService {
     private final PostCommentRepository commentRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final AlarmRepository alarmRepository;
 
     @Transactional // 댓글 작성
     public PostCommentResponseDto createdComment(PostCommentRequestDto commentReqDto, Long postId) {
         Post post = postRepository.findById(postId).orElseThrow(() ->
                 new EntityNotFoundException("게시물을 찾을 수 없습니다.")
         );
-        userRepository.findById(commentReqDto.getUserId()).orElseThrow(() ->
+        User user = userRepository.findById(commentReqDto.getUserId()).orElseThrow(() ->
                 new EntityNotFoundException("사용자를 찾을 수 없습니다.")
         );
 
         PostComment postComment = new PostComment(commentReqDto, post);
         commentRepository.save(postComment);
+        // 알림 추가
+        // 자기 포스트에 자기가 댓글 제외
+        if(!post.getUser().equals(user)) {
+            sendAlarm(postComment.getId(), user);
+        }
 
         return new PostCommentResponseDto(postComment, commentReqDto, postId);
 
@@ -83,5 +93,13 @@ public class PostCommentService {
         }else {
             return "게시물 또는 유저 아이디를 확인해주세요";
         }
+    }
+
+    // 알림 추가 메서드
+    public void sendAlarm(Long itemId, User user) {
+        // 유저 존재 확인
+        Alarm alarm = new Alarm(AlarmTypeEnum.COMMENT, itemId, user);
+        // 알림 저장
+        alarmRepository.save(alarm);
     }
 }
