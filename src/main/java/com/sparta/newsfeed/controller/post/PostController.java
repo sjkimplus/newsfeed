@@ -21,18 +21,18 @@ import java.util.List;
 public class PostController {
     private final PostService postService;
     private final JwtUtil jwtUtil;
+
     // 게시물 올리기
     @PostMapping(value = "/posts")
     public PostResponseDto createPost(@Auth AuthUser authUser,
-                           @RequestPart("requestDto") PostRequestDto requestDto,
-                           @RequestPart("multipartFile") List<MultipartFile> multipartFile) throws Exception {
+                                      @RequestPart("requestDto") PostRequestDto requestDto,
+                                      @RequestPart("multipartFile") List<MultipartFile> multipartFile) throws Exception {
         return postService.createPost(authUser.getEmail(), requestDto, multipartFile);
-
+    }
 
     // 게시물 조회
     @GetMapping("/posts/{postId}")
-    public PostResponseDto getPost(@CookieValue(JwtUtil.AUTHORIZATION_HEADER) String tokenValue,
-                                   @PathVariable("postId") long postId) {
+    public PostResponseDto getPost(@CookieValue(JwtUtil.AUTHORIZATION_HEADER) String tokenValue, @PathVariable("postId") long postId) {
 
         // 본인의 게시물 및 친구의 게시물인지 확인
         PostResponseDto postResponseDto = postService.getPost(postId);
@@ -66,7 +66,6 @@ public class PostController {
     }
 
     // 게시물 다건 조회
-
 
 
     // 뉴스피드
