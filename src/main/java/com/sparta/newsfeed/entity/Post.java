@@ -1,5 +1,6 @@
 package com.sparta.newsfeed.entity;
 
+import com.sparta.newsfeed.entity.like.Like;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,6 +10,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @NoArgsConstructor
@@ -36,12 +39,19 @@ public class Post {
     @Column(name = "date_modified")
     private LocalDateTime modifiedDate;
 
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PostComment> comments = new ArrayList<>();
+
+// 확실치 안음.
+//    @OneToMany(mappedBy = "likes", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<Like> likes = new ArrayList<>();
+
     public Post(User user, String content) {
         this.user = user;
         this.content = content;
     }
 
-    public void updatePost(String text) {
-        this.content = text;
+    public void updatePost(String content) {
+        this.content = content;
     }
 }
