@@ -41,7 +41,7 @@ public class Post {
         this.content = content;
     }
 
-    public void updatePost(String text) {
-        this.content = text;
+    public void updatePost(String content) {
+        this.content = content;
     }
 }
