@@ -1,5 +1,7 @@
 package com.sparta.newsfeed.controller.user;
 
+import com.sparta.newsfeed.annotation.Auth;
+import com.sparta.newsfeed.dto.AuthUser;
 import com.sparta.newsfeed.dto.user.LoginRequestDto;
 import com.sparta.newsfeed.dto.user.UserRequestDto;
 import com.sparta.newsfeed.dto.user.UserResponseDto;
@@ -34,12 +36,11 @@ public class UserController {
     public ResponseEntity<UserResponseDto> login(@Valid @RequestBody LoginRequestDto loginRequestDto, HttpServletResponse httpServletResponse) {
         return ResponseEntity.ok(userService.login(jwtUtil, loginRequestDto, httpServletResponse));
     }
-    @PutMapping("/users/{email}")
-    public ResponseEntity<UserResponseDto> update(@CookieValue(JwtUtil.AUTHORIZATION_HEADER) String tokenValue,
-                                                  @PathVariable String email,
+
+    @PutMapping("/users")
+    public ResponseEntity<UserResponseDto> update(@Auth AuthUser authUser,
                                                   @Valid @RequestBody UserUpdateRequestDto userUpdateRequestDto) {
-        jwtUtil.checkAuth(tokenValue, email);
-        return ResponseEntity.ok(userService.update(email, userUpdateRequestDto));
+        return ResponseEntity.ok(userService.update(authUser.getEmail(), userUpdateRequestDto));
     }
 
     @DeleteMapping("/users")

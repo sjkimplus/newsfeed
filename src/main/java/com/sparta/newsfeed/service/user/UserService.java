@@ -9,6 +9,7 @@ import com.sparta.newsfeed.entity.Image;
 import com.sparta.newsfeed.entity.User;
 import com.sparta.newsfeed.jwt.JwtUtil;
 import com.sparta.newsfeed.repository.ImageRepository;
+import com.sparta.newsfeed.repository.RelationshipRepository;
 import com.sparta.newsfeed.repository.UserRepository;
 import com.sparta.newsfeed.utile.FileUtils;
 import jakarta.servlet.http.HttpServletResponse;
@@ -31,6 +32,7 @@ import static com.sparta.newsfeed.entity.Type.USER;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final RelationshipRepository relationshipRepository;
     private final PasswordEncoder passwordEncoder;
 
     private final ImageRepository imageRepository;
@@ -99,6 +101,9 @@ public class UserService {
         }
 
         user.deleteUpdate(java.time.LocalDateTime.now());
+
+        //실제 삭제가 아닌 소프트 삭제여서 Cascade 안통함. 그래서 수동으로 연관 데이터 전부 삭제
+        relationshipRepository.deleteBySentUserIdOrReceivedUserId(user.getId(), user.getId());
 
         return "삭제 완료";
     }
