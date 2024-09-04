@@ -5,6 +5,7 @@ import com.sparta.newsfeed.dto.alarm.AlarmTextResponseDto;
 import com.sparta.newsfeed.entity.User;
 import com.sparta.newsfeed.entity.alarm.Alarm;
 import com.sparta.newsfeed.entity.alarm.AlarmTypeEnum;
+import com.sparta.newsfeed.entity.like.Like;
 import com.sparta.newsfeed.repository.AlarmRepository;
 import com.sparta.newsfeed.repository.LikeRepository;
 import com.sparta.newsfeed.repository.PostCommentRepository;
@@ -29,7 +30,9 @@ public class AlarmService {
     @Transactional
     public AlarmResponseDto addAlarms(String userEmail, AlarmTypeEnum type, Long itemId) {
         // 유저 존재 확인
-        Alarm alarm = new Alarm(type, itemId, findUserEmail(userEmail));
+        findUserEmail(userEmail);
+        // 알림 생성
+        Alarm alarm = new Alarm(type, itemId, alarmGetUser(type, itemId));
         // type itemID 존재 확인
         findTypeItemId(type, itemId);
         // 알림 저장
@@ -44,7 +47,11 @@ public class AlarmService {
         List<Alarm> alarmList = alarmRepository.findAllByUserIdOrderByIdDesc(user.getId());
         List<AlarmTextResponseDto> dtoList = new ArrayList<>();
         for (Alarm alarm : alarmList) {
-            AlarmTextResponseDto dto = new AlarmTextResponseDto(alarm, alarmGetName(alarm.getType(), alarm.getItemId()));
+            AlarmTextResponseDto dto = new AlarmTextResponseDto(
+                    alarm,
+                    alarmGetUser(alarm.getType(), alarm.getItemId()).getName(),
+                    findTypeItemId(alarm.getType(), alarm.getItemId())
+            );
             dtoList.add(dto);
         }
         return dtoList;
@@ -69,18 +76,18 @@ public class AlarmService {
     }
 
     // 알림 보낸사람 이름 확인 메서드
-    private String alarmGetName(AlarmTypeEnum type, Long itemId) {
+    private User alarmGetUser(AlarmTypeEnum type, Long itemId) {
         switch (type) {
             case COMMENT -> {
                 return findUserId(
                         postCommentRepository.findById(itemId)
                                 .orElseThrow(() -> new NullPointerException("해당 ID의 댓글이 없습니다."))
-                                .getUserId()).getName();
+                                .getUserId());
             }
             case LIKE -> {
                 return likeRepository.findById(itemId)
                         .orElseThrow(() -> new NullPointerException("해당 ID의 좋아요가 없습니다."))
-                        .getUser().getName();
+                        .getUser();
             }
             default -> {
                 return null;
@@ -89,16 +96,15 @@ public class AlarmService {
     }
 
     // type itemID 존재 확인
-    private void findTypeItemId(AlarmTypeEnum type, Long itemId) {
-        switch (type) {
+    private Like findTypeItemId(AlarmTypeEnum type, Long itemId) {
+        return switch (type) {
             case COMMENT -> {
                 postCommentRepository.findById(itemId)
                         .orElseThrow(() -> new NullPointerException("해당 ID의 댓글이 없습니다."));
+                yield null;
             }
-            case LIKE -> {
-                likeRepository.findById(itemId)
-                        .orElseThrow(() -> new NullPointerException("해당 ID의 좋아요가 없습니다."));
-            }
-        }
+            case LIKE -> likeRepository.findById(itemId)
+                    .orElseThrow(() -> new NullPointerException("해당 ID의 좋아요가 없습니다."));
+        };
     }
 }
