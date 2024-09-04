@@ -11,7 +11,7 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
     //    Like findByTypeAndItemIdIn(String type, Long itemId);
     long countByTypeAndItemId(LikeTypeEnum type, Long itemId);
 
-    Like findByTypeAndItemId(LikeTypeEnum type, Long itemId);
+    Like findByTypeAndItemIdAndUser(LikeTypeEnum type, Long itemId, User user);
 
     List<Like> findAllByUserOrderByCreateAtDesc(User user);
 
