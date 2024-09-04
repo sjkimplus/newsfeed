@@ -13,6 +13,7 @@ import java.util.Optional;
 public interface ImageRepository extends JpaRepository<Image, Long> {
     List<Image> findAllByTypeAndItemId (Type type, Long itemId);
 
+    void deleteByIdAndType(Long id, Type type);
 
     @Query("SELECT i FROM Image i WHERE i.itemId = :itemId")
     List<Image> findByItemId(@Param("itemId") Long itemId);

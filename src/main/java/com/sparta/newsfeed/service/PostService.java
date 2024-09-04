@@ -8,19 +8,18 @@ import com.sparta.newsfeed.repository.*;
 import com.sparta.newsfeed.utile.FileUtils;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.sparta.newsfeed.entity.Type.POST;
-import static com.sparta.newsfeed.entity.Type.USER;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class PostService {
 
     private final PostRepository postRepository;
@@ -29,7 +28,7 @@ public class PostService {
     private final LikeRepository likeRepository;
     private final PostCommentRepository postCommentRepository;
     private final FileUtils fileUtils;
-    public List<String> createPost(long userId, PostRequestDto requestDto, List<MultipartFile> multipartFiles) throws Exception {
+    public PostResponseDto createPost(long userId, PostRequestDto requestDto, List<MultipartFile> multipartFiles) throws Exception {
         // 사용자 찾기
         User user = userRepository.findById(userId).orElseThrow();
 
@@ -47,7 +46,7 @@ public class PostService {
                 imageRepository.save(img);
             }
         }
-        return imagePaths;  // 이미지 URL 리스트 반환
+        return getPost(post.getId());  // 이미지 URL 리스트 반환
     }
 
     public PostResponseDto getPost(long postId) {
@@ -63,8 +62,20 @@ public class PostService {
             imageUrls.addAll(file.getImageUrl()); // Add all image URLs to the list
         }
 
+        // get the number of likes
+        Long likeCount = likeRepository.countByTypeAndItemId(LikeTypeEnum.POST, postId);
+
+        // get the comments
+        List<PostComment> comments = postCommentRepository.findAllByPostId(postId);
+
         // Create and return the PostResponseDto with the collected image URLs
-        return new PostResponseDto(post, imageUrls);
+        return new PostResponseDto(post, imageUrls, likeCount, comments);
+    }
+
+    public void updatePost(long postId, String content) {
+        Post post = postRepository.findById(postId).orElseThrow(() ->
+                new EntityNotFoundException("게시물을 찾을 수 없습니다."));
+        post.updatePost(content);
     }
 
 }

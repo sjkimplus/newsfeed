@@ -14,6 +14,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,26 +25,46 @@ public class FileController {
 
     // 업로드된 이미지 파일을 불러오는 API (파일 경로 숨김)
     @GetMapping("/files/{type}/{filename:.+}")
-    public void loadImage(@PathVariable("type") String type, HttpServletRequest req, HttpServletResponse res) throws IOException {
-        // 요청된 URI에서 파일 경로 추출 (URL 디코딩 포함)
-        String requestURI = req.getRequestURI();
-        String decodedURI = URLDecoder.decode(requestURI, StandardCharsets.UTF_8.toString());
-        String filePath = System.getProperty("user.dir") + fileUtils.getBaseFilePath() + "\\" + type + decodedURI.replace("/files/" + type, "");
+    public void loadImage(@PathVariable("type") String type, @PathVariable("filename") String filename,
+                          HttpServletRequest req, HttpServletResponse res) throws IOException {
+        // 1. 요청된 URI에서 파일 경로 추출 (URL 디코딩 포함)
+        String decodedFilename = URLDecoder.decode(filename, StandardCharsets.UTF_8.toString());
 
-        File imgFile = new File(filePath);
-        System.out.println("Looking for file at: " + imgFile.getAbsolutePath());  // 실제 찾으려는 파일 경로 출력
+        // 2. 서버의 기본 디렉토리 경로와 파일 경로를 설정
+        File baseDir = new File(System.getProperty("user.dir") + fileUtils.getBaseFilePath() + "\\" + type);
+        File requestedFile = new File(baseDir, decodedFilename);
 
-        if (imgFile.exists()) {
-            try (FileInputStream in = new FileInputStream(imgFile);
+        // 3. 경로 탐색 공격 방지: 요청된 파일 경로가 baseDir 경로를 벗어나지 않도록 검증
+        if (!requestedFile.getCanonicalPath().startsWith(baseDir.getCanonicalPath())) {
+            res.setStatus(HttpServletResponse.SC_FORBIDDEN);  // 권한 없음(403) 반환
+            return;
+        }
+
+        // 4. 파일이 존재하는지 확인
+        if (requestedFile.exists() && requestedFile.isFile()) {
+            // 5. 파일의 MIME 타입 설정
+            String mimeType = req.getServletContext().getMimeType(requestedFile.getAbsolutePath());
+
+            // 6. 허용된 MIME 타입 리스트
+            List<String> allowedMimeTypes = Arrays.asList("image/jpeg", "image/png", "image/gif");
+
+            // 7. 허용되지 않은 MIME 타입은 차단
+            if (mimeType == null || !allowedMimeTypes.contains(mimeType)) {
+                res.setStatus(HttpServletResponse.SC_FORBIDDEN);  // 허용되지 않은 파일 형식에 대해 403 반환
+                return;
+            }
+
+            // 8. 파일을 다운로드로 처리하도록 Content-Disposition 헤더 설정
+            res.setHeader("Content-Disposition", "attachment; filename=\"" + requestedFile.getName() + "\"");
+            res.setContentType(mimeType);
+
+            // 9. 파일을 클라이언트로 전송
+            try (FileInputStream in = new FileInputStream(requestedFile);
                  ServletOutputStream outStream = res.getOutputStream()) {
-
-                // 파일의 MIME 타입 설정
-                String mimeType = req.getServletContext().getMimeType(imgFile.getAbsolutePath());
-                res.setContentType(mimeType != null ? mimeType : "application/octet-stream");
 
                 byte[] buffer = new byte[1024];
                 int bytesRead;
-                // 파일을 클라이언트에게 전송
+
                 while ((bytesRead = in.read(buffer)) != -1) {
                     outStream.write(buffer, 0, bytesRead);
                 }
@@ -50,7 +72,8 @@ public class FileController {
                 outStream.flush();
             }
         } else {
-            res.setStatus(HttpServletResponse.SC_NOT_FOUND);  // 파일이 없을 경우 404 응답
+            // 10. 파일이 존재하지 않으면 404 상태 반환
+            res.setStatus(HttpServletResponse.SC_NOT_FOUND);  // 파일을 찾을 수 없을 경우 404 반환
         }
     }
 }

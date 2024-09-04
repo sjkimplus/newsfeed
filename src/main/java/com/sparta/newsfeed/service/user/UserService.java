@@ -38,11 +38,12 @@ public class UserService {
     private final String passwordPrefix = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
     private final FileUtils fileUtils;
 
-    public UserResponseDto create(UserRequestDto userRequestDto){
+    public UserResponseDto create(UserRequestDto userRequestDto) {
         String password = passwordEncoder.encode(userRequestDto.getPassword());
-        String email = userRequestDto.getEmail();;
+        String email = userRequestDto.getEmail();
+        ;
         Optional<User> checkEmail = userRepository.findByEmail(email);
-        if(checkEmail.isPresent()) throw new IllegalArgumentException("중복된 아이디 입니다.");
+        if (checkEmail.isPresent()) throw new IllegalArgumentException("중복된 아이디 입니다.");
 
         User user = new User(userRequestDto, password);
         userRepository.save(user);
@@ -50,20 +51,20 @@ public class UserService {
         return new UserResponseDto(user);
     }
 
-    public UserResponseDto login(JwtUtil jwtUtil, LoginRequestDto loginRequestDto, HttpServletResponse httpServletResponse){
+    public UserResponseDto login(JwtUtil jwtUtil, LoginRequestDto loginRequestDto, HttpServletResponse httpServletResponse) {
         String email = loginRequestDto.getEmail();
         String password = loginRequestDto.getPassword();
 
-        User user =  userRepository.findByEmail(email).orElseThrow(()->
+        User user = userRepository.findByEmail(email).orElseThrow(() ->
                 new IllegalArgumentException("해당 사용자가 없습니다."));
 
-        if(!passwordEncoder.matches(password, user.getPassword())){
-            throw  new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
         List<String> saveUserImage = new ArrayList<>();
         List<Image> byTypeAndItemId = imageRepository.findByTypeAndItemId(USER, user.getId());
-        for (Image image : byTypeAndItemId){
+        for (Image image : byTypeAndItemId) {
             saveUserImage.addAll(image.getImageUrl());
         }
 
@@ -74,14 +75,14 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponseDto update(String email, UserUpdateRequestDto userUpdateRequestDto){
+    public UserResponseDto update(String email, UserUpdateRequestDto userUpdateRequestDto) {
         User user = findUser(email);
 
-        if(userUpdateRequestDto.getNewPassword() != null){
-            if(!passwordEncoder.matches(userUpdateRequestDto.getCurrentPassword(), user.getPassword())){
+        if (userUpdateRequestDto.getNewPassword() != null) {
+            if (!passwordEncoder.matches(userUpdateRequestDto.getCurrentPassword(), user.getPassword())) {
                 throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
             }
-            if(user.getPassword().equals(userUpdateRequestDto.getNewPassword())){
+            if (user.getPassword().equals(userUpdateRequestDto.getNewPassword())) {
                 throw new IllegalArgumentException("이전과 동일한 비밀번호 입니다. 새롭게 지정해주세요");
             }
             user.updatePassword(userUpdateRequestDto);
@@ -91,10 +92,10 @@ public class UserService {
     }
 
     @Transactional
-    public String delete(LoginRequestDto loginRequestDto){
+    public String delete(LoginRequestDto loginRequestDto) {
         User user = findUser(loginRequestDto.getEmail());
 
-        if(!passwordEncoder.matches(loginRequestDto.getPassword(), user.getPassword())){
+        if (!passwordEncoder.matches(loginRequestDto.getPassword(), user.getPassword())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
@@ -103,16 +104,16 @@ public class UserService {
         return "삭제 완료";
     }
 
-    public User findUser(String email){
-        User user = userRepository.findByEmail(email).orElseThrow(()->new IllegalArgumentException("선택한 유저는 존재하지 않습니다."));
-        if(user.getDateDeleted() != null){
+    public User findUser(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("선택한 유저는 존재하지 않습니다."));
+        if (user.getDateDeleted() != null) {
             throw new IllegalArgumentException("이미 삭제된 유저 입니다");
         }
 
         return user;
     }
 
-    public UserResponseDto findProfile(String email){
+    public UserResponseDto findProfile(String email) {
         User user = findUser(email);
 
         // Initialize a list to store image URLs
@@ -128,39 +129,56 @@ public class UserService {
     }
 
     @Transactional
-    public ResponseEntity<?> createUsersImage(String email, List<MultipartFile> multipartFile) throws IOException {
+    public List<String> createUsersImage(String email, List<MultipartFile> multipartFile) throws IOException {
         User user = findUser(email);
         List<Image> allByTypeAndItemId = imageRepository.findAllByTypeAndItemId(USER, user.getId());
-        if (allByTypeAndItemId.size() <= 0) {
-            if (multipartFile.size() <= 1) {
-                List<String> imagePaths = fileUtils.parseInsertFileInfo(multipartFile, USER);
 
-                for (String imagePath : imagePaths) {
-                    // 이미지 URL을 DB에 저장
-                    if (!imagePath.isEmpty()) {
-                        Image img = new Image(user.getId(), USER, imagePath);
-                        imageRepository.save(img);
-                    }
-                }
-                return ResponseEntity.ok(imagePaths);  // 이미지 URL 리스트 반환
-            }
+        if (allByTypeAndItemId.size() > 0) {
+            throw new IllegalStateException("이미 저장된 사진이 있습니다.");  // 예외 처리로 반환
         }
-        return ResponseEntity.status(HttpStatus.CONFLICT).body("이미 저장된 사진이 있습니다.");
+
+        if (multipartFile.size() == 1) {
+            List<String> imagePaths = fileUtils.parseInsertFileInfo(multipartFile, USER);
+
+            for (String imagePath : imagePaths) {
+                // 이미지 URL을 DB에 저장
+                if (!imagePath.isEmpty()) {
+                    Image img = new Image(user.getId(), USER, imagePath);
+                    imageRepository.save(img);
+                }
+            }
+            return imagePaths;  // 이미지 URL 리스트 반환
+        }
+        throw new IllegalArgumentException("사진 1개만 등록 가능합니다.");
     }
 
     @Transactional
     public List<String> modifyUsersImage(String email, List<MultipartFile> multipartFile) throws IOException {
         User user = findUser(email);
 
-        List<Image> image = imageRepository.findByItemId(user.getId());
-        List<String> list = fileUtils.parseInsertFileInfo(multipartFile, USER);
-        for (Image image1 : image) {
-            Image byIdAndType = imageRepository.findByIdAndType(image1.getId(), USER);
-            if (byIdAndType != null){
-                byIdAndType.updateImageUrl(list);
+        // multipartFile 자체가 null인 경우와 비어 있는지 확인
+        if (multipartFile != null && !multipartFile.isEmpty()) {
+            // 새로운 이미지가 전송된 경우
+            List<Image> images = imageRepository.findByItemId(user.getId());
+            List<String> list = fileUtils.parseInsertFileInfo(multipartFile, USER);
+
+            // 이미지 리스트 순회하여 업데이트
+            for (Image image : images) {
+                Image byIdAndType = imageRepository.findByIdAndType(image.getId(), USER);
+                if (byIdAndType != null) {
+                    byIdAndType.updateImageUrl(list); // 이미지 URL 업데이트
+                }
+            }
+
+            return list;  // 업데이트된 이미지 리스트 반환
+        } else if (multipartFile == null || multipartFile.isEmpty()) {
+            // multipartFile이 없거나 빈 값일 경우, 이미지 삭제 처리
+            List<Image> imagesToDelete = imageRepository.findByItemId(user.getId());
+            for (Image image : imagesToDelete) {
+                imageRepository.deleteByIdAndType(image.getId(), USER);
             }
         }
 
-        return list;
+        return new ArrayList<>();  // 빈 리스트 반환
     }
 }

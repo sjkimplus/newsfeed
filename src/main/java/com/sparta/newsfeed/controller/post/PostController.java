@@ -20,18 +20,21 @@ public class PostController {
 
     // 게시물 올리기
     @PostMapping(value = "/posts/{id}")
-    public List<String> createPost(@PathVariable("id") long userId,  @RequestPart("requestDto") PostRequestDto requestDto, @RequestPart("multipartFile") List<MultipartFile> multipartFile) throws Exception {
+    public PostResponseDto createPost(@PathVariable("id") long userId,  @RequestPart("requestDto") PostRequestDto requestDto, @RequestPart("multipartFile") List<MultipartFile> multipartFile) throws Exception {
         return postService.createPost(userId, requestDto, multipartFile);
     }
 
     // 게시물 조회
-    @GetMapping("/posts/{id}")
-    public PostResponseDto getPost(@PathVariable("id") long postId) {
+    @GetMapping("/posts/{postId}")
+    public PostResponseDto getPost(@PathVariable("postId") long postId) {
         return postService.getPost(postId);
     }
 
     // 게시물 수정
-
+    @PutMapping("/posts/{postId}")
+    public void updatePost(@PathVariable("postId") long postId, @RequestParam("id") String content) {
+        postService.updatePost(postId, content);
+    }
 
     // 게시물 삭제
 
