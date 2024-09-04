@@ -4,10 +4,16 @@ import com.sparta.newsfeed.dto.post.PostRequestDto;
 import com.sparta.newsfeed.dto.post.PostResponseDto;
 import com.sparta.newsfeed.entity.*;
 import com.sparta.newsfeed.entity.like.LikeTypeEnum;
+import com.sparta.newsfeed.entity.post.Post;
+import com.sparta.newsfeed.entity.post.PostSortTypeEnum;
 import com.sparta.newsfeed.repository.*;
 import com.sparta.newsfeed.utile.FileUtils;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -84,4 +90,15 @@ public class PostService {
         postRepository.deleteById(postId);
     }
 
+//    public Page<PostResponseDto> getPosts(long postId, PostSortTypeEnum type, int page, int size) {
+//
+//        Sort.Direction direction = Sort.Direction.DESC;
+//        Sort sort  = Sort.by(direction, "modifiedDate");
+//        Pageable pageable = PageRequest.of(page, size, sort);
+//
+//        Page<Schedule> schedules = scheduleRepository.findAll(pageable);
+//        return schedules.map(schedule -> new GeneralScheduleResponseDto(schedule));
+//
+//        return null;
+//    }
 }

@@ -1,6 +1,5 @@
 package com.sparta.newsfeed.repository;
 
-import com.sparta.newsfeed.entity.Post;
 import com.sparta.newsfeed.entity.PostComment;
 import org.springframework.data.jpa.repository.JpaRepository;
 

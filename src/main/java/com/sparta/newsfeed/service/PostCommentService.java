@@ -2,7 +2,7 @@ package com.sparta.newsfeed.service;
 
 import com.sparta.newsfeed.dto.comment.PostCommentRequestDto;
 import com.sparta.newsfeed.dto.comment.PostCommentResponseDto;
-import com.sparta.newsfeed.entity.Post;
+import com.sparta.newsfeed.entity.post.Post;
 import com.sparta.newsfeed.entity.PostComment;
 import com.sparta.newsfeed.repository.PostCommentRepository;
 import com.sparta.newsfeed.repository.PostRepository;

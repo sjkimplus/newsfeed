@@ -4,12 +4,11 @@ import com.sparta.newsfeed.annotation.Auth;
 import com.sparta.newsfeed.dto.AuthUser;
 import com.sparta.newsfeed.dto.post.PostRequestDto;
 import com.sparta.newsfeed.dto.post.PostResponseDto;
-import com.sparta.newsfeed.entity.Post;
+import com.sparta.newsfeed.entity.post.PostSortTypeEnum;
 import com.sparta.newsfeed.jwt.JwtUtil;
 import com.sparta.newsfeed.service.PostService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.MediaType;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,7 +31,8 @@ public class PostController {
 
     // 게시물 조회
     @GetMapping("/posts/{postId}")
-    public PostResponseDto getPost(@CookieValue(JwtUtil.AUTHORIZATION_HEADER) String tokenValue, @PathVariable("postId") long postId) {
+    public PostResponseDto getPost(@CookieValue(JwtUtil.AUTHORIZATION_HEADER) String tokenValue,
+                                   @PathVariable("postId") long postId) {
 
         // 본인의 게시물 및 친구의 게시물인지 확인
         PostResponseDto postResponseDto = postService.getPost(postId);
@@ -66,6 +66,22 @@ public class PostController {
     }
 
     // 게시물 다건 조회
+//    @GetMapping("/posts")
+//    public Page<PostResponseDto> getPosts(@CookieValue(JwtUtil.AUTHORIZATION_HEADER) String tokenValue,
+//                                          @PathVariable("postId") long postId,
+//                                          @RequestParam("type") PostSortTypeEnum type,
+//                                          @RequestParam(value = "page", defaultValue = "1") int page,
+//                                          @RequestParam(value = "size", defaultValue = "10") int size) {
+//
+//        // 본인의 게시물 및 친구의 게시물인지 확인
+//        PostResponseDto postResponseDto = postService.getPost(postId);
+//        // 조회하려는 게시물이 본인의 게시물인지 확인
+//        jwtUtil.checkAuth(tokenValue, postResponseDto.getEmail());
+//        // 친구의 계시물인지 확인
+//
+//
+//        return postService.getPosts(postId, type, page, size);
+//    }
 
 
     // 뉴스피드

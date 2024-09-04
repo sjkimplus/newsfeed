@@ -1,6 +1,5 @@
 package com.sparta.newsfeed.dto.comment;
 
-import com.sparta.newsfeed.entity.Post;
 import com.sparta.newsfeed.entity.PostComment;
 import lombok.Getter;
 

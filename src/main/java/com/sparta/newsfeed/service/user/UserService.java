@@ -102,6 +102,7 @@ public class UserService {
 
         return "삭제 완료";
     }
+
     public User findUser(String email) {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("선택한 유저는 존재하지 않습니다."));
         if (user.getDateDeleted() != null) {
