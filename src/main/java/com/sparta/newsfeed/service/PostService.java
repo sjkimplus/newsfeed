@@ -25,9 +25,9 @@ public class PostService {
     private final LikeRepository likeRepository;
     private final PostCommentRepository postCommentRepository;
 
-    public void createPost(long userId, PostRequestDto requestDto, List<MultipartFile> multipartFile) {
+    public void createPost(String userEmail, PostRequestDto requestDto, List<MultipartFile> multipartFile) {
         // find user
-        User user = userRepository.findById(userId).orElseThrow();
+        User user = userRepository.findByEmail(userEmail).orElseThrow();
 
         // make post
         Post post = new Post(user, requestDto.getContent());
@@ -41,7 +41,6 @@ public class PostService {
             }
         }
     }
-
 
     public PostResponseDto getPost(long postId) {
         // find the post
