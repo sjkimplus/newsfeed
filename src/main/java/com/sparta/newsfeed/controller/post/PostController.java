@@ -8,6 +8,8 @@ import com.sparta.newsfeed.entity.Post;
 import com.sparta.newsfeed.jwt.JwtUtil;
 import com.sparta.newsfeed.service.PostService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,11 +23,11 @@ public class PostController {
     private final JwtUtil jwtUtil;
     // 게시물 올리기
     @PostMapping(value = "/posts")
-    public void createPost(@Auth AuthUser authUser,
+    public PostResponseDto createPost(@Auth AuthUser authUser,
                            @RequestPart("requestDto") PostRequestDto requestDto,
-                           @RequestPart("multipartFile") List<MultipartFile> multipartFile) {
-        postService.createPost(authUser.getEmail(), requestDto, multipartFile);
-    }
+                           @RequestPart("multipartFile") List<MultipartFile> multipartFile) throws Exception {
+        return postService.createPost(authUser.getEmail(), requestDto, multipartFile);
+
 
     // 게시물 조회
     @GetMapping("/posts/{postId}")

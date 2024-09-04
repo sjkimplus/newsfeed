@@ -1,8 +1,8 @@
 package com.sparta.newsfeed.entity;
 
 public enum Type {
-    USER(Authority.USER),  // 사용자 권한
-    POST(Authority.POST);  // 관리자 권한
+    USER(Authority.USER),
+    POST(Authority.POST);
 
     private final String authority;
 
