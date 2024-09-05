@@ -35,10 +35,6 @@ public class RelationshipService {
         //데이터 중복 방지
         if(findRelationship(users.get(0), users.get(1)).isPresent()) throw new DataDuplicationException("이미 친구 추가 요청을 보냈습니다.");
 
-        //이미 상대방이 친구 요청을 했을경우
-        Optional<Relationship> receivedRelationship = findRelationship(users.get(1), users.get(0));
-        if(receivedRelationship.isPresent()) throw new DataDuplicationException("이미 상대방이 친구 추가 요청을 보냈습니다.");
-
         Relationship newRelationship = new Relationship(users.get(0), users.get(1));
 
         if(users.get(0) == users.get(1)) {
@@ -47,7 +43,7 @@ public class RelationshipService {
         relationshipRepository.save(newRelationship);
 
         // 알림 추가
-        sendAlarm(newRelationship.getId(), users.get(1));
+        //sendAlarm(newRelationship.getId(), users.get(1));
         return "친구 요청이 완료되었습니다.";
     }
 
