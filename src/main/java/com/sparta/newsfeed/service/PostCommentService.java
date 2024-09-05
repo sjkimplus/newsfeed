@@ -7,6 +7,7 @@ import com.sparta.newsfeed.entity.PostComment;
 import com.sparta.newsfeed.entity.User;
 import com.sparta.newsfeed.entity.alarm.Alarm;
 import com.sparta.newsfeed.entity.alarm.AlarmTypeEnum;
+import com.sparta.newsfeed.jwt.JwtUtil;
 import com.sparta.newsfeed.repository.AlarmRepository;
 import com.sparta.newsfeed.repository.PostCommentRepository;
 import com.sparta.newsfeed.repository.PostRepository;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,9 +31,12 @@ public class PostCommentService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final AlarmRepository alarmRepository;
+    private final JwtUtil jwtUtil;
 
     @Transactional // 댓글 작성
-    public PostCommentResponseDto createdComment(PostCommentRequestDto commentReqDto, Long postId) {
+    public PostCommentResponseDto createdComment(String email,String tokenValue, PostCommentRequestDto commentReqDto, Long postId) {
+        jwtUtil.checkAuth(tokenValue, email);
+
         Post post = postRepository.findById(postId).orElseThrow(() ->
                 new EntityNotFoundException("게시물을 찾을 수 없습니다.")
         );
@@ -67,26 +72,50 @@ public class PostCommentService {
 
 
     @Transactional
-    public PostCommentResponseDto modifyComment(PostCommentRequestDto commentReqDto,
+    public PostCommentResponseDto modifyComment(String email,String tokenValue,PostCommentRequestDto commentReqDto,
                                                 Long postId, Long userId) {
+        jwtUtil.checkAuth(tokenValue, email);
+
+
         postRepository.findById(postId).orElseThrow(() ->
                 new EntityNotFoundException("게시물을 찾을 수 없습니다.")
         );
         PostComment comment = commentRepository.findById(userId).orElseThrow(() ->
                 new EntityNotFoundException("댓글을 찾을 수 없습니다.")
         );
+
+        User user = userRepository.findByEmail(email).orElseThrow(()->
+                new EntityNotFoundException("유저를 찾을 수 없습니다.")
+        );
+
+        if (comment.getUserName() != user.getName()){
+            throw new IllegalArgumentException("댓글 작성자가 아닙니다.");
+        }
+
         comment.commentsModify(commentReqDto.getContent());
         return new PostCommentResponseDto(comment);
     }
 
     @Transactional
-    public String deleteComment(Long postId, Long commentId) {
+    public String deleteComment(String email,String tokenValue,Long postId, Long commentId) {
+
+        jwtUtil.checkAuth(tokenValue, email);
+
+
         Post post = postRepository.findById(postId).orElseThrow(() ->
                 new EntityNotFoundException("게시물을 찾을 수 없습니다.")
         );
         PostComment comment = commentRepository.findById(commentId).orElseThrow(() ->
                 new EntityNotFoundException("댓글을 찾을 수 없습니다.")
         );
+        User user = userRepository.findByEmail(email).orElseThrow(()->
+                new EntityNotFoundException("유저를 찾을 수 없습니다.")
+        );
+
+        if (comment.getUserName() != user.getName()){
+            throw new IllegalArgumentException("댓글 작성자가 아닙니다.");
+        }
+
         if (post != null && comment != null) {
             commentRepository.deleteById(comment.getId());
             return comment.getId() + "번 댓글 삭제 완료";
