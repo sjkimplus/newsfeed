@@ -64,5 +64,12 @@ public class GlobalExceptionController {
     public String accessRights(ResponseStatusException ex) {
         return ex.getStatusCode() + ": " + ex.getReason() ;
     }
+
+    @ExceptionHandler(FileProcessingException.class)
+    public ResponseEntity<String> handleFileProcessingException(FileProcessingException ex) {
+        // 예외 메시지를 클라이언트에게 전달
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ex.getMessage());
+    }
 }
 
