@@ -39,15 +39,17 @@ public class PostService {
         postRepository.save(post);
 
         // 파일 저장 및 이미지 URL 리스트 생성
-        List<String> imagePaths = fileUtils.parseInsertFileInfo(multipartFiles, POST);
+//        List<String> imagePaths = fileUtils.parseInsertFileInfo(multipartFiles, POST);
+//
+//        for (String imagePath : imagePaths) {
+//            // 이미지 URL을 DB에 저장
+//            if (!imagePath.isEmpty()) {
+//                Image img = new Image(post.getId(), Type.POST, imagePath);
+//                imageRepository.save(img);
+//            }
+//        }
+        fileUtils.saveImage(POST, multipartFiles, post.getId());
 
-        for (String imagePath : imagePaths) {
-            // 이미지 URL을 DB에 저장
-            if (!imagePath.isEmpty()) {
-                Image img = new Image(post.getId(), Type.POST, imagePath);
-                imageRepository.save(img);
-            }
-        }
         return getPost(post.getId());  // 이미지 URL 리스트 반환
     }
 
