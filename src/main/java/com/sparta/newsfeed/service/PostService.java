@@ -7,6 +7,7 @@ import com.sparta.newsfeed.entity.*;
 import com.sparta.newsfeed.entity.like.LikeTypeEnum;
 import com.sparta.newsfeed.entity.post.Post;
 import com.sparta.newsfeed.entity.post.PostSortTypeEnum;
+import com.sparta.newsfeed.exception.DataNotFoundException;
 import com.sparta.newsfeed.repository.*;
 import com.sparta.newsfeed.service.user.RelationshipService;
 import com.sparta.newsfeed.utile.FileUtils;
@@ -52,7 +53,7 @@ public class PostService {
 
     public PostResponseDto getPost(long postId) {
         // find the post
-        Post post = postRepository.findById(postId).orElseThrow();
+        Post post = postRepository.findById(postId).orElseThrow(() -> new DataNotFoundException("id " + postId + "번 게시물은 존제하지 않습니다."));
 
 
         List<String> imageUrls = fileUtils.getImage(POST,post.getId());
@@ -69,8 +70,7 @@ public class PostService {
 
     @Transactional
     public void updatePost(long postId, PostRequestDto requestDto) {
-        Post post = postRepository.findById(postId).orElseThrow(() ->
-                new EntityNotFoundException("게시물을 찾을 수 없습니다."));
+        Post post = postRepository.findById(postId).orElseThrow(() -> new DataNotFoundException("ID " + postId + "번 게시물은 존제하지 않습니다."));
         post.updatePost(requestDto.getContent());
     }
 
