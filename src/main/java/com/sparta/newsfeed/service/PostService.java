@@ -8,10 +8,13 @@ import com.sparta.newsfeed.repository.*;
 import com.sparta.newsfeed.utile.FileUtils;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +32,8 @@ public class PostService {
     private final LikeRepository likeRepository;
     private final PostCommentRepository postCommentRepository;
     private final FileUtils fileUtils;
-
+    @Value("${file.upload.path}")
+    private String filePath;
     public PostResponseDto createPost(String userEmail, PostRequestDto requestDto, List<MultipartFile> multipartFiles) throws Exception {
         // 사용자 찾기
         User user = userRepository.findByEmail(userEmail).orElseThrow();
@@ -80,8 +84,60 @@ public class PostService {
         post.updatePost(requestDto.getContent());
     }
 
-    public void deletePost(long postId) {
+    @Transactional
+    public void deletePost(long postId) throws IOException {
         postRepository.deleteById(postId);
+
+        // 1. 기존 이미지 파일을 가져오기
+        List<Image> imagesToDelete = imageRepository.findByItemId(postId);
+
+        // 1.1 기존 파일 삭제 (DB 및 파일 시스템)
+        deleteExistingImages(imagesToDelete);
+
+    }
+    private void deleteExistingImages(List<Image> imagesToDelete) throws IOException {
+        if (imagesToDelete != null && !imagesToDelete.isEmpty()) {
+            for (Image image : imagesToDelete) {
+                // 1. 데이터베이스에서 이미지 삭제
+                imageRepository.delete(image);
+
+                // 2. 파일 시스템에서 파일 삭제
+                deleteImageFiles(image);
+            }
+        }
+    }
+
+    private void deleteImageFiles(Image image) {
+        // 프로젝트 경로 가져오기
+        String projectPath = System.getProperty("user.dir");
+
+        // 이미지 URL 리스트 가져오기
+        List<String> imageUrls = image.getImageUrl();
+
+        for (String imageUrl : imageUrls) {
+            if (imageUrl != null && !imageUrl.isEmpty()) {
+                // /files 경로를 제거하고 실제 파일 경로를 생성
+                imageUrl = imageUrl.replace("/files", "");
+
+                // 절대 경로 생성 (OS에 따라 파일 구분자를 일관되게 처리)
+                String absoluteFilePath = projectPath + File.separator + filePath + imageUrl.replace("/", File.separator);
+                System.out.println("삭제할 파일 경로: " + absoluteFilePath);
+
+                // 파일 객체 생성 및 파일 삭제
+                File fileToDelete = new File(absoluteFilePath);
+                if (fileToDelete.exists()) {
+                    if (fileToDelete.delete()) {
+                        System.out.println("파일 삭제 성공: " + fileToDelete.getAbsolutePath());
+                    } else {
+                        System.out.println("파일 삭제 실패: " + fileToDelete.getAbsolutePath());
+                    }
+                } else {
+                    System.out.println("파일이 존재하지 않습니다: " + fileToDelete.getAbsolutePath());
+                }
+            } else {
+                System.out.println("이미지 URL이 null이거나 비어 있습니다.");
+            }
+        }
     }
 
 }
