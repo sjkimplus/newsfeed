@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.xml.crypto.Data;
 import java.time.format.DateTimeParseException;
@@ -55,6 +56,13 @@ public class GlobalExceptionController {
     public String idTypeMismatch(MethodArgumentTypeMismatchException ex) {
         return ex.getName() + " 의 입력된 값은 잘못된 입력 입니다. " +  Objects.requireNonNull(ex.getRequiredType()).getSimpleName() + " 타입으로 " + " 정확히 입력해주세요."
                 + " 당신이 넣은 값은 " + ex.getValue() + " 입니다.";
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ResponseBody
+    public String accessRights(ResponseStatusException ex) {
+        return ex.getStatusCode() + ": " + ex.getReason() ;
     }
 }
 
