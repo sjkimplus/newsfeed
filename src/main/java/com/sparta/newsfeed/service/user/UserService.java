@@ -7,6 +7,9 @@ import com.sparta.newsfeed.dto.user.UserResponseDto;
 import com.sparta.newsfeed.dto.user.UserUpdateRequestDto;
 import com.sparta.newsfeed.entity.Image;
 import com.sparta.newsfeed.entity.User;
+import com.sparta.newsfeed.exception.DataDuplicationException;
+import com.sparta.newsfeed.exception.DataNotFoundException;
+import com.sparta.newsfeed.exception.PasswordMismatchException;
 import com.sparta.newsfeed.jwt.JwtUtil;
 import com.sparta.newsfeed.repository.ImageRepository;
 import com.sparta.newsfeed.repository.RelationshipRepository;
@@ -44,7 +47,7 @@ public class UserService {
         String password = passwordEncoder.encode(userRequestDto.getPassword());
         String email = userRequestDto.getEmail();
         Optional<User> checkEmail = userRepository.findByEmail(email);
-        if (checkEmail.isPresent()) throw new IllegalArgumentException("중복된 아이디 입니다.");
+        if (checkEmail.isPresent()) throw new DataDuplicationException("중복된 아이디 입니다.");
 
         User user = new User(userRequestDto, password);
         userRepository.save(user);
@@ -57,10 +60,10 @@ public class UserService {
         String password = loginRequestDto.getPassword();
 
         User user = userRepository.findByEmail(email).orElseThrow(() ->
-                new IllegalArgumentException("해당 사용자가 없습니다."));
+                new DataNotFoundException("해당 사용자가 없습니다."));
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+            throw new PasswordMismatchException(email + " 의 " + "패스워드가 올바르지 않습니다.");
         }
 
         List<String> saveUserImage = new ArrayList<>();
@@ -81,10 +84,10 @@ public class UserService {
 
         if (userUpdateRequestDto.getNewPassword() != null) {
             if (!passwordEncoder.matches(userUpdateRequestDto.getCurrentPassword(), user.getPassword())) {
-                throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+                throw new PasswordMismatchException(email + " 의 " + "패스워드가 올바르지 않습니다.");
             }
             if (user.getPassword().equals(userUpdateRequestDto.getNewPassword())) {
-                throw new IllegalArgumentException("이전과 동일한 비밀번호 입니다. 새롭게 지정해주세요");
+                throw new DataDuplicationException("이전과 동일한 비밀번호 입니다. 새롭게 지정해주세요");
             }
             user.updatePassword(userUpdateRequestDto);
         }
@@ -97,7 +100,7 @@ public class UserService {
         User user = findUser(loginRequestDto.getEmail());
 
         if (!passwordEncoder.matches(loginRequestDto.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+            throw new PasswordMismatchException(loginRequestDto.getEmail() + " 의 " + "패스워드가 올바르지 않습니다.");
         }
 
         user.deleteUpdate(java.time.LocalDateTime.now());
@@ -108,9 +111,9 @@ public class UserService {
         return "삭제 완료";
     }
     public User findUser(String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("선택한 유저는 존재하지 않습니다."));
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new DataNotFoundException("선택한 유저는 존재하지 않습니다."));
         if (user.getDateDeleted() != null) {
-            throw new IllegalArgumentException("이미 삭제된 유저 입니다");
+            throw new DataNotFoundException("이미 삭제된 유저 입니다");
         }
 
         return user;
