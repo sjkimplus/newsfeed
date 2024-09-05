@@ -40,11 +40,8 @@ public class Post {
     @Column(name = "date_modified")
     private LocalDateTime modifiedDate;
 
-//    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<PostComment> comments = new ArrayList<>();
-//
-//    @OneToMany(mappedBy = "likes", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<Like> likes = new ArrayList<>();
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PostComment> comments = new ArrayList<>();
 
 
     public Post(User user, String content) {

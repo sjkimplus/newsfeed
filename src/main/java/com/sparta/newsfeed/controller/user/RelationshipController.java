@@ -17,13 +17,13 @@ public class RelationshipController {
 
     @PostMapping("/relationships")
     public String create(@Auth AuthUser authUser,
-                         @RequestParam String receivedEmail){
+                         @RequestParam("receivedEmail") String receivedEmail){
         return relationshipService.create(authUser.getEmail(), receivedEmail);
     }
 
     @PutMapping("/relationships/accept")
     public String accept(@Auth AuthUser authUser,
-                         @RequestParam String sentEmail){
+                         @RequestParam("sentEmail") String sentEmail){
         return relationshipService.updateStatus(authUser.getEmail(), sentEmail, RelationshipStatusEnum.ACCEPTED);
     }
 
@@ -38,5 +38,4 @@ public class RelationshipController {
                          @RequestParam String targetEmail){
         return relationshipService.delete(authUser.getEmail(), targetEmail);
     }
-
 }
