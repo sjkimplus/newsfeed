@@ -9,6 +9,7 @@ import com.sparta.newsfeed.entity.alarm.Alarm;
 import com.sparta.newsfeed.entity.alarm.AlarmTypeEnum;
 import com.sparta.newsfeed.entity.relation.Relationship;
 import com.sparta.newsfeed.entity.relation.RelationshipStatusEnum;
+import com.sparta.newsfeed.exception.DataDuplicationException;
 import com.sparta.newsfeed.repository.AlarmRepository;
 import com.sparta.newsfeed.repository.RelationshipRepository;
 import com.sparta.newsfeed.repository.UserRepository;
@@ -43,10 +44,14 @@ public class RelationshipService {
         if(receivedRelationship.isPresent()) throw new IllegalArgumentException("이미 상대방이 친구 추가 요청을 보냈습니다.");
 
         Relationship newRelationship = new Relationship(users.get(0), users.get(1));
+
+        if(users.get(0) == users.get(1)) {
+            throw new DataDuplicationException("본인에게 친구 요청을 할 수 없습니다.");
+        }
         relationshipRepository.save(newRelationship);
+
         // 알림 추가
         sendAlarm(newRelationship.getId(), users.get(1));
-
         return "친구 요청이 완료되었습니다.";
     }
 
