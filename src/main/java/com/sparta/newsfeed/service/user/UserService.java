@@ -100,9 +100,6 @@ public class UserService {
 
         user.deleteUpdate(java.time.LocalDateTime.now());
 
-        //실제 삭제가 아닌 소프트 삭제여서 Cascade 안통함. 그래서 수동으로 연관 데이터 전부 삭제
-        relationshipRepository.deleteBySentUserIdOrReceivedUserId(user.getId(), user.getId());
-
         return "삭제 완료";
     }
 
