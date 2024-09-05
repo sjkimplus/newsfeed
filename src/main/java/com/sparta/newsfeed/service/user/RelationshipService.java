@@ -100,9 +100,7 @@ public class RelationshipService {
     }
     // 알림 추가 메서드
     public void sendAlarm(Long itemId, User user) {
-        // 유저 존재 확인
         Alarm alarm = new Alarm(AlarmTypeEnum.RELATIONSHIP, itemId, user);
-        // 알림 저장
         alarmRepository.save(alarm);
     }
 }

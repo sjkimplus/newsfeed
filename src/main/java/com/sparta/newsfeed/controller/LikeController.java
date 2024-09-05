@@ -26,11 +26,11 @@ public class LikeController {
     }
 
     @DeleteMapping("/api/likes") // 좋아요 취소
-    public void deleteLike(
+    public String deleteLike(
             @Auth AuthUser authUser,
             @RequestParam("type") LikeTypeEnum type,
             @RequestParam("itemId") Long itemId) {
-        likeService.deleteLike(authUser.getEmail(), type, itemId);
+        return likeService.deleteLike(authUser.getEmail(), type, itemId);
     }
 
     @GetMapping("/api/likes") // 좋아요 다건 조회
