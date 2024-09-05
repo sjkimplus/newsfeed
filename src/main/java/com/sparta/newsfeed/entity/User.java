@@ -53,11 +53,11 @@ public class User extends Timestamped{
 
     public void update(UserUpdateRequestDto userUpdateRequestDto){
         if(userUpdateRequestDto.getName() != null) this.name = userUpdateRequestDto.getName();
-        if(userUpdateRequestDto.getBirthday() != null) this.name = userUpdateRequestDto.getBirthday();
+        if(userUpdateRequestDto.getBirthday() != null) this.birthday = userUpdateRequestDto.getBirthday();
     }
 
-    public void updatePassword(UserUpdateRequestDto userUpdateRequestDto){
-        this.password = userUpdateRequestDto.getNewPassword();
+    public void updatePassword(String newPassword){
+        this.password = newPassword;
     }
 
     public void deleteUpdate(LocalDateTime deleteTime){
