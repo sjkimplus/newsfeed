@@ -58,13 +58,13 @@ public class AlarmService {
         findUserEmail(userEmail);
         // 알림 삭제
         alarmRepository.delete(alarmRepository.findById(alarmId)
-                .orElseThrow(() -> new DataNotFoundException("해당 ID의 알림이 없습니다")));
+                .orElseThrow(() -> new DataNotFoundException("선택한 알림이 존재하지 않습니다.")));
     }
 
 
     public User findUserEmail(String userEmail) {
         return userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new DataNotFoundException("해당 ID의 유저가 없습니다."));
+                .orElseThrow(() -> new DataNotFoundException("선택한 유저가 존재하지 않습니다."));
     }
 
     // 알림 보낸사람 이름 확인 메서드
@@ -72,12 +72,12 @@ public class AlarmService {
     public User findTypeItemId(AlarmTypeEnum type, Long itemId) {
         return switch (type) {
             case COMMENT -> userRepository.findById(postCommentRepository.findById(itemId)
-                            .orElseThrow(() -> new DataNotFoundException("해당 ID의 댓글이 없습니다.")).getUserId())
-                    .orElseThrow(() -> new DataNotFoundException("해당 ID의 유저가 없습니다."));
+                            .orElseThrow(() -> new DataNotFoundException("선택한 댓글이 존재하지 않습니다.")).getUserId())
+                    .orElseThrow(() -> new DataNotFoundException("선택한 유저가 존재하지 않습니다."));
             case LIKE -> likeRepository.findById(itemId)
-                    .orElseThrow(() -> new DataNotFoundException("해당 ID의 좋아요가 없습니다.")).getUser();
+                    .orElseThrow(() -> new DataNotFoundException("선택한 좋아요가 존재하지 않습니다.")).getUser();
             case RELATIONSHIP -> relationshipRepository.findById(itemId)
-                    .orElseThrow(() -> new DataNotFoundException("해당 ID의 친구 요청이 없습니다.")).getSentUser();
+                    .orElseThrow(() -> new DataNotFoundException("선택한 친구 요청이 존재하지 않습니다")).getSentUser();
         };
     }
 
@@ -88,13 +88,13 @@ public class AlarmService {
         switch(alarm.getType()) {
             case LIKE -> {
                 Like like = likeRepository.findById(alarm.getItemId())
-                        .orElseThrow(() -> new DataNotFoundException("해당 ID의 좋아요가 없습니다."));
+                        .orElseThrow(() -> new DataNotFoundException("선택한 좋아요가 존재하지 않습니다."));
                 type = String.valueOf(like.getType());
                 itemId = like.getItemId();
             }
             case COMMENT -> {
                 PostComment postComment = postCommentRepository.findById(alarm.getItemId())
-                        .orElseThrow(() -> new DataNotFoundException("해당 ID의 댓글이 없습니다."));
+                        .orElseThrow(() -> new DataNotFoundException("선택한 댓글이 존재하지 않습니다."));
                 type = "POST";
                 itemId = postComment.getPost().getId();
             }

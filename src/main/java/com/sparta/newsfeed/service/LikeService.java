@@ -55,8 +55,13 @@ public class LikeService {
         User user = findUserEmail(userEmail);
         // type itemId 존재 확인
         typeItemId(type, itemId);
+        // 좋아요 검증
+        Like like = findTypeItemIdUser(type, itemId, user);
+        if (like == null) {
+            throw  new DataNotFoundException("삭제할 좋아요가 없습니다.");
+        }
         // 좋아요 삭제
-        likeRepository.delete(findTypeItemIdUser(type, itemId, user));
+        likeRepository.delete(like);
         return "삭제 완료";
     }
 
@@ -76,28 +81,24 @@ public class LikeService {
 
     // type, itemId 로 Like 가져오기 메서드
     public Like findTypeItemIdUser(LikeTypeEnum type, Long itemId, User user) {
-        Like like = likeRepository.findByTypeAndItemIdAndUser(type, itemId, user);
-        if (like == null) {
-            throw  new DataNotFoundException("해당 ID의 LIKE 가 없습니다.");
-        }
-        return like;
+        return likeRepository.findByTypeAndItemIdAndUser(type, itemId, user);
     }
     // userEmail 로 User 가져오기 메서드
     public User findUserEmail(String userEmail) {
-        return userRepository.findByEmail(userEmail).orElseThrow(() -> new DataNotFoundException("없는 유저ID입니다."));
+        return userRepository.findByEmail(userEmail).orElseThrow(() -> new DataNotFoundException("선택한 유저는 존재하지 않습니다."));
     }
     // type itemID 존재 확인 메서드
     private User typeItemId(LikeTypeEnum type, Long itemId) {
         switch (type) {
             case POST -> {
                 return postRepository.findById(itemId)
-                        .orElseThrow(() -> new DataNotFoundException("해당 ID의 POST 가 없습니다.")).getUser();
+                        .orElseThrow(() -> new DataNotFoundException("게시물 " + itemId + " 이 존재하지 않습니다.")).getUser();
             }
             case COMMENT -> {
                 return userRepository.findById(
                         postCommentRepository.findById(itemId)
-                                .orElseThrow(() -> new DataNotFoundException("해당 ID의 COMMENT 가 없습니다."))
-                                .getUserId()).orElseThrow(() -> new DataNotFoundException("없는 유저ID입니다."));
+                                .orElseThrow(() -> new DataNotFoundException("댓글 " + itemId + " 이 존재하지 않습니다."))
+                                .getUserId()).orElseThrow(() -> new DataNotFoundException("선택한 유저는 존재하지 않습니다."));
             }
             default -> {
                 return null;
