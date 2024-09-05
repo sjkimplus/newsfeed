@@ -1,16 +1,13 @@
 package com.sparta.newsfeed.utile;
 
 import com.sparta.newsfeed.entity.Image;
-import com.sparta.newsfeed.entity.Post;
 import com.sparta.newsfeed.entity.Type;
 import com.sparta.newsfeed.entity.User;
 import com.sparta.newsfeed.repository.ImageRepository;
 import com.sparta.newsfeed.service.user.UserService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -110,6 +107,7 @@ public class FileUtils {
             }
         }
     }
+
     public List<String> modifyUsersImage(String email, List<MultipartFile> multipartFile) throws IOException {
         User user = userService.findUser(email);
 
@@ -149,21 +147,25 @@ public class FileUtils {
         }
 
         if (multipartFile.size() == 1) {
-            List<String> imagePaths = parseInsertFileInfo(multipartFile, USER);
-
-            for (String imagePath : imagePaths) {
-                // 이미지 URL을 DB에 저장
-                if (!imagePath.isEmpty()) {
-                    Image img = new Image(user.getId(), USER, imagePath);
-                    imageRepository.save(img);
-                }
-            }
-            return imagePaths;  // 이미지 URL 리스트 반환
+            return saveImage(USER, multipartFile, user.getId());
         }
         throw new IllegalArgumentException("");
     }
 
-    public List<String> getImage(Type type, Long itemId){
+    public List<String> saveImage(Type type, List<MultipartFile> multipartFile, Long ItemId) throws IOException {
+        List<String> imagePaths = parseInsertFileInfo(multipartFile, type);
+
+        for (String imagePath : imagePaths) {
+            // 이미지 URL을 DB에 저장
+            if (!imagePath.isEmpty()) {
+                Image img = new Image(ItemId, type, imagePath);
+                imageRepository.save(img);
+            }
+        }
+        return imagePaths;
+    }
+
+    public List<String> getImage(Type type, Long itemId) {
         List<String> imageUrls = new ArrayList<>();
         // get the corresponding images of the post
         List<Image> images = imageRepository.findAllByTypeAndItemId(type, itemId);
