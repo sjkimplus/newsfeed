@@ -83,7 +83,8 @@ public class UserService {
             if (user.getPassword().equals(userUpdateRequestDto.getNewPassword())) {
                 throw new DataDuplicationException("이전과 동일한 비밀번호 입니다. 새롭게 지정해주세요");
             }
-            user.updatePassword(userUpdateRequestDto);
+            String password = passwordEncoder.encode(userUpdateRequestDto.getNewPassword());
+            user.updatePassword(password);
         }
         user.update(userUpdateRequestDto);
         return new UserResponseDto(user);
