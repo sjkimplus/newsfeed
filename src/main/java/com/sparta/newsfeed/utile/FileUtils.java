@@ -3,6 +3,8 @@ package com.sparta.newsfeed.utile;
 import com.sparta.newsfeed.entity.Image;
 import com.sparta.newsfeed.entity.Type;
 import com.sparta.newsfeed.entity.User;
+import com.sparta.newsfeed.exception.DataNotFoundException;
+import com.sparta.newsfeed.exception.FileProcessingException;
 import com.sparta.newsfeed.repository.ImageRepository;
 import com.sparta.newsfeed.service.user.UserService;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,23 +43,26 @@ public class FileUtils {
 
         for (MultipartFile multipartFile : mpFiles) {
             if (!multipartFile.isEmpty()) {
-                String originalFileName = multipartFile.getOriginalFilename();
-                String storedFileName = UUID.randomUUID() + "_" + originalFileName;
+                try {
+                    String originalFileName = multipartFile.getOriginalFilename();
+                    String storedFileName = UUID.randomUUID() + "_" + originalFileName;
 
-                // 파일을 저장할 경로 설정
-                String projectPath = System.getProperty("user.dir") + filePath + "\\" + type;
+                    // 파일을 저장할 경로 설정
+                    String projectPath = System.getProperty("user.dir") + filePath + "\\" + type;
 
-                File saveFile = new File(projectPath, storedFileName);
-                if (!saveFile.exists()) {
-                    saveFile.mkdirs();  // 디렉토리가 존재하지 않으면 생성
+                    File saveFile = new File(projectPath, storedFileName);
+                    if (!saveFile.exists()) {
+                        saveFile.mkdirs();  // 디렉토리가 존재하지 않으면 생성
+                    }
+                    multipartFile.transferTo(saveFile);
+                    System.out.println("Saved file path: " + saveFile.getAbsolutePath());  // 저장된 파일의 경로를 출력
+
+                    // 저장된 파일의 상대 경로를 리스트에 추가
+                    String relativePath = "/files/" + type + "/" + storedFileName;
+                    filePaths.add(relativePath);
+                } catch (IOException e) {
+                    throw new FileProcessingException("파일 저장 중 오류가 발생했습니다. 파일명: " + multipartFile.getOriginalFilename(), e);
                 }
-                multipartFile.transferTo(saveFile);
-                System.out.println("Saved file path: " + saveFile.getAbsolutePath());  // 저장된 파일의 경로를 출력
-
-
-                // 저장된 파일의 상대 경로를 리스트에 추가
-                String relativePath = "/files/" + type + "/" + storedFileName;
-                filePaths.add(relativePath);
             }
         }
         return filePaths;  // 저장된 파일의 상대 경로들을 반환
@@ -94,16 +99,12 @@ public class FileUtils {
                 // 파일 객체 생성 및 파일 삭제
                 File fileToDelete = new File(absoluteFilePath);
                 if (fileToDelete.exists()) {
-                    if (fileToDelete.delete()) {
-                        System.out.println("파일 삭제 성공: " + fileToDelete.getAbsolutePath());
-                    } else {
-                        System.out.println("파일 삭제 실패: " + fileToDelete.getAbsolutePath());
+                    if (!fileToDelete.delete()) {
+                        throw new FileProcessingException("파일 삭제 실패: " + fileToDelete.getAbsolutePath());
                     }
                 } else {
-                    System.out.println("파일이 존재하지 않습니다: " + fileToDelete.getAbsolutePath());
+                    throw new DataNotFoundException("파일이 존재하지 않습니다: " + fileToDelete.getAbsolutePath());
                 }
-            } else {
-                System.out.println("이미지 URL이 null이거나 비어 있습니다.");
             }
         }
     }
@@ -114,9 +115,8 @@ public class FileUtils {
         // 1. 기존 이미지 파일을 가져오기
         List<Image> imagesToDelete = imageRepository.findByItemId(user.getId());
 
-        // multipartFile이 null이 아니고 비어있지 않은 경우
-        if (multipartFile != null && !multipartFile.isEmpty()) {
 
+        if (multipartFile != null && !multipartFile.isEmpty()) {
             // 1.1 기존 파일 삭제 (DB 및 파일 시스템)
             deleteExistingImages(imagesToDelete);
 
@@ -131,6 +131,9 @@ public class FileUtils {
 
             return newImagePaths;  // 업데이트된 이미지 리스트 반환
         } else {
+            if (imagesToDelete.size() <= 0){
+                throw new FileProcessingException("등록된 이미지가 없습니다.");
+            }
             // 2. 새로운 이미지가 없는 경우, 기존 파일만 삭제
             deleteExistingImages(imagesToDelete);
         }
@@ -143,13 +146,13 @@ public class FileUtils {
         List<Image> allByTypeAndItemId = imageRepository.findAllByTypeAndItemId(USER, user.getId());
 
         if (allByTypeAndItemId.size() > 0) {
-            throw new IllegalStateException("이미 저장된 사진이 있습니다.");  // 예외 처리로 반환
+            throw new FileProcessingException("이미 저장된 사진이 있습니다.");
         }
 
         if (multipartFile.size() == 1) {
             return saveImage(USER, multipartFile, user.getId());
         }
-        throw new IllegalArgumentException("");
+        throw new IllegalArgumentException("이미지를 한 개 이상 업로드해야 합니다.");
     }
 
     public List<String> saveImage(Type type, List<MultipartFile> multipartFile, Long ItemId) throws IOException {
@@ -167,7 +170,6 @@ public class FileUtils {
 
     public List<String> getImage(Type type, Long itemId) {
         List<String> imageUrls = new ArrayList<>();
-        // get the corresponding images of the post
         List<Image> images = imageRepository.findAllByTypeAndItemId(type, itemId);
         for (Image file : images) {
             imageUrls.addAll(file.getImageUrl()); // Add all image URLs to the list

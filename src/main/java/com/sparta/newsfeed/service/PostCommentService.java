@@ -7,6 +7,10 @@ import com.sparta.newsfeed.entity.PostComment;
 import com.sparta.newsfeed.entity.User;
 import com.sparta.newsfeed.entity.alarm.Alarm;
 import com.sparta.newsfeed.entity.alarm.AlarmTypeEnum;
+import com.sparta.newsfeed.exception.CommentAuthOrVerificationException;
+import com.sparta.newsfeed.exception.DataNotFoundException; // 사용된 예외 클래스
+import com.sparta.newsfeed.exception.PasswordMismatchException;
+import com.sparta.newsfeed.jwt.JwtUtil;
 import com.sparta.newsfeed.repository.AlarmRepository;
 import com.sparta.newsfeed.repository.PostCommentRepository;
 import com.sparta.newsfeed.repository.PostRepository;
@@ -24,82 +28,115 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class PostCommentService {
 
-
     private final PostCommentRepository commentRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final AlarmRepository alarmRepository;
+    private final JwtUtil jwtUtil;
 
     @Transactional // 댓글 작성
-    public PostCommentResponseDto createdComment(PostCommentRequestDto commentReqDto, Long postId) {
+    public PostCommentResponseDto createdComment(String email, String tokenValue, PostCommentRequestDto commentReqDto, Long postId) {
+        jwtUtil.checkAuth(tokenValue, email);
+
+        // 게시물 찾기
         Post post = postRepository.findById(postId).orElseThrow(() ->
-                new EntityNotFoundException("게시물을 찾을 수 없습니다.")
+                new DataNotFoundException("게시물을 찾을 수 없습니다.")  // DataNotFoundException 사용
         );
+
+        // 사용자 찾기
         User user = userRepository.findById(commentReqDto.getUserId()).orElseThrow(() ->
-                new EntityNotFoundException("사용자를 찾을 수 없습니다.")
+                new DataNotFoundException("사용자를 찾을 수 없습니다.")  // DataNotFoundException 사용
         );
 
         PostComment postComment = new PostComment(commentReqDto, post, user);
         commentRepository.save(postComment);
-        // 알림 추가
+
         // 자기 포스트에 자기가 댓글 제외
-        if(!post.getUser().equals(user)) {
+        if (!post.getUser().equals(user)) {
             sendAlarm(postComment.getId(), post.getUser());
         }
 
         return new PostCommentResponseDto(postComment, commentReqDto, postId);
-
     }
 
+    // 댓글 전체 조회
+    public List<PostCommentResponseDto> findByAllComment(Long postId) {
+        List<PostComment> comments = commentRepository.findAllByPostId(postId);
 
-    // 특정 게시물에 있는 댓글 전체 조회
-    public List<PostCommentResponseDto> findByAllComment(Long post_id) {
-        List<PostComment> findByPostIdAll = commentRepository.findAllByPostId(post_id);
-
-        List<PostCommentResponseDto> commentResponseDto = new ArrayList<>();
-        for (PostComment postComment : findByPostIdAll) {
-            PostCommentResponseDto postCommentResponseDto = new PostCommentResponseDto(postComment);
-            commentResponseDto.add(postCommentResponseDto);
+        if (comments.isEmpty()) {
+            throw new DataNotFoundException("해당 게시물에 댓글이 없습니다."); // DataNotFoundException 사용
         }
 
-        return commentResponseDto;
+        List<PostCommentResponseDto> commentResponseDtos = new ArrayList<>();
+        for (PostComment postComment : comments) {
+            commentResponseDtos.add(new PostCommentResponseDto(postComment));
+        }
+
+        return commentResponseDtos;
     }
 
-
     @Transactional
-    public PostCommentResponseDto modifyComment(PostCommentRequestDto commentReqDto,
-                                                Long postId, Long userId) {
+    public PostCommentResponseDto modifyComment(String email, String tokenValue, PostCommentRequestDto commentReqDto,
+                                                Long postId, Long commentId) {
+        jwtUtil.checkAuth(tokenValue, email);
+
+        // 게시물 찾기
         postRepository.findById(postId).orElseThrow(() ->
-                new EntityNotFoundException("게시물을 찾을 수 없습니다.")
+                new DataNotFoundException("게시물을 찾을 수 없습니다.")  // DataNotFoundException 사용
         );
-        PostComment comment = commentRepository.findById(userId).orElseThrow(() ->
-                new EntityNotFoundException("댓글을 찾을 수 없습니다.")
+
+        // 댓글 찾기
+        PostComment comment = commentRepository.findById(commentId).orElseThrow(() ->
+                new DataNotFoundException("댓글을 찾을 수 없습니다.")  // DataNotFoundException 사용
         );
+
+        // 사용자 검증
+        User user = userRepository.findByEmail(email).orElseThrow(() ->
+                new DataNotFoundException("사용자를 찾을 수 없습니다.")  // DataNotFoundException 사용
+        );
+
+        // 댓글 작성자 검증
+        if (!comment.getUserName().equals(user.getName())) {
+            throw new CommentAuthOrVerificationException("댓글 작성자가 아닙니다."); // CommentAuthOrVerificationException 사용
+        }
+
+        // 댓글 수정
         comment.commentsModify(commentReqDto.getContent());
         return new PostCommentResponseDto(comment);
     }
 
     @Transactional
-    public String deleteComment(Long postId, Long commentId) {
+    public String deleteComment(String email, String tokenValue, Long postId, Long commentId) {
+        jwtUtil.checkAuth(tokenValue, email);
+
+        // 게시물 찾기
         Post post = postRepository.findById(postId).orElseThrow(() ->
-                new EntityNotFoundException("게시물을 찾을 수 없습니다.")
+                new DataNotFoundException("게시물을 찾을 수 없습니다.")  // DataNotFoundException 사용
         );
+
+        // 댓글 찾기
         PostComment comment = commentRepository.findById(commentId).orElseThrow(() ->
-                new EntityNotFoundException("댓글을 찾을 수 없습니다.")
+                new DataNotFoundException("댓글을 찾을 수 없습니다.")  // DataNotFoundException 사용
         );
-        if (post != null && comment != null) {
-            commentRepository.deleteById(comment.getId());
-            return comment.getId() + "번 댓글 삭제 완료";
-        }else {
-            return "게시물 또는 유저 아이디를 확인해주세요";
+
+        // 사용자 검증
+        User user = userRepository.findByEmail(email).orElseThrow(() ->
+                new DataNotFoundException("사용자를 찾을 수 없습니다.")  // DataNotFoundException 사용
+        );
+
+        // 댓글 작성자 검증
+        if (!comment.getUserName().equals(user.getName())) {
+            throw new CommentAuthOrVerificationException("댓글 작성자가 아닙니다."); // CommentAuthOrVerificationException 사용
         }
+
+        // 댓글 삭제
+        commentRepository.deleteById(comment.getId());
+        return comment.getId() + "번 댓글 삭제 완료";
     }
 
     // 알림 추가 메서드
     public void sendAlarm(Long itemId, User user) {
-        // 유저 존재 확인
         Alarm alarm = new Alarm(AlarmTypeEnum.COMMENT, itemId, user);
-        // 알림 저장
         alarmRepository.save(alarm);
     }
 }
