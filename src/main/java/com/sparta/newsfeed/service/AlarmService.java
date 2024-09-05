@@ -7,6 +7,7 @@ import com.sparta.newsfeed.entity.User;
 import com.sparta.newsfeed.entity.alarm.Alarm;
 import com.sparta.newsfeed.entity.alarm.AlarmTypeEnum;
 import com.sparta.newsfeed.entity.like.Like;
+import com.sparta.newsfeed.exception.DataNotFoundException;
 import com.sparta.newsfeed.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,7 +24,7 @@ public class AlarmService {
     private final AlarmRepository alarmRepository;
     private final UserRepository userRepository;
     private final PostCommentRepository postCommentRepository;
-    private final PostRepository postRepository;
+    private final RelationshipRepository relationshipRepository;
     private final LikeRepository likeRepository;
 
     @Transactional
@@ -31,7 +32,7 @@ public class AlarmService {
         // 유저 존재 확인
         findUserEmail(userEmail);
         // 알림 생성
-        Alarm alarm = new Alarm(type, itemId, findTypeItemId(type, itemId).getUser());
+        Alarm alarm = new Alarm(type, itemId, findTypeItemId(type, itemId));
         // type itemID 존재 확인
         findTypeItemId(type, itemId);
         // 알림 저장
@@ -46,25 +47,7 @@ public class AlarmService {
         List<Alarm> alarmList = alarmRepository.findAllByUserIdOrderByIdDesc(user.getId());
         List<AlarmTextResponseDto> dtoList = new ArrayList<>();
         for (Alarm alarm : alarmList) {
-            Like like = findTypeItemId(alarm.getType(), alarm.getItemId());
-            if (like == null && alarm.getType() == AlarmTypeEnum.COMMENT) {
-                PostComment postComment = findPostComment(alarm);
-                AlarmTextResponseDto dto = new AlarmTextResponseDto(
-                        alarm,
-                        postComment.getUserName(),
-                        "POST",
-                        postComment.getPost().getId()
-                );
-                dtoList.add(dto);
-            } else {
-                AlarmTextResponseDto dto = new AlarmTextResponseDto(
-                        alarm,
-                        like.getUser().getName(),
-                        String.valueOf(like.getType()),
-                        like.getItemId()
-                );
-                dtoList.add(dto);
-            }
+            dtoList.add(addAlarmTextDto(alarm));
         }
         return dtoList;
     }
@@ -75,30 +58,61 @@ public class AlarmService {
         findUserEmail(userEmail);
         // 알림 삭제
         alarmRepository.delete(alarmRepository.findById(alarmId)
-                .orElseThrow(() -> new NullPointerException("해당 ID의 알림이 없습니다")));
+                .orElseThrow(() -> new DataNotFoundException("선택한 알림이 존재하지 않습니다.")));
     }
 
 
     public User findUserEmail(String userEmail) {
         return userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new NullPointerException("없는 유저ID입니다."));
-    }
-    public PostComment findPostComment(Alarm alarm){
-       return postCommentRepository.findById(alarm.getItemId())
-                .orElseThrow(() -> new NullPointerException("해당 ID의 댓글이 없습니다."));
+                .orElseThrow(() -> new DataNotFoundException("선택한 유저가 존재하지 않습니다."));
     }
 
     // 알림 보낸사람 이름 확인 메서드
     // type itemID 존재 확인
-    private Like findTypeItemId(AlarmTypeEnum type, Long itemId) {
+    public User findTypeItemId(AlarmTypeEnum type, Long itemId) {
         return switch (type) {
-            case COMMENT -> {
-                postCommentRepository.findById(itemId)
-                        .orElseThrow(() -> new NullPointerException("해당 ID의 댓글이 없습니다."));
-                yield null;
-            }
+            case COMMENT -> userRepository.findById(postCommentRepository.findById(itemId)
+                            .orElseThrow(() -> new DataNotFoundException("선택한 댓글이 존재하지 않습니다.")).getUserId())
+                    .orElseThrow(() -> new DataNotFoundException("선택한 유저가 존재하지 않습니다."));
             case LIKE -> likeRepository.findById(itemId)
-                    .orElseThrow(() -> new NullPointerException("해당 ID의 좋아요가 없습니다."));
+                    .orElseThrow(() -> new DataNotFoundException("선택한 좋아요가 존재하지 않습니다.")).getUser();
+            case RELATIONSHIP -> relationshipRepository.findById(itemId)
+                    .orElseThrow(() -> new DataNotFoundException("선택한 친구 요청이 존재하지 않습니다")).getSentUser();
         };
+    }
+
+    // 알림 type 별 textDto 선별
+    public AlarmTextResponseDto addAlarmTextDto(Alarm alarm) {
+        String type;
+        Long itemId;
+        switch(alarm.getType()) {
+            case LIKE -> {
+                Like like = likeRepository.findById(alarm.getItemId())
+                        .orElseThrow(() -> new DataNotFoundException("선택한 좋아요가 존재하지 않습니다."));
+                type = String.valueOf(like.getType());
+                itemId = like.getItemId();
+            }
+            case COMMENT -> {
+                PostComment postComment = postCommentRepository.findById(alarm.getItemId())
+                        .orElseThrow(() -> new DataNotFoundException("선택한 댓글이 존재하지 않습니다."));
+                type = "POST";
+                itemId = postComment.getPost().getId();
+            }
+            case RELATIONSHIP -> {
+                type = "RELATIONSHIP";
+                itemId = null;
+            }
+            default -> {
+                type = null;
+                itemId = null;
+            }
+        }
+        AlarmTextResponseDto dto = new AlarmTextResponseDto(
+                alarm,
+                findTypeItemId(alarm.getType(), alarm.getItemId()).getName(),
+                type,
+                itemId
+        );
+        return dto;
     }
 }

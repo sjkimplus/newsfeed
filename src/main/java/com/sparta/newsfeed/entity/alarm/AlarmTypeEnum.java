@@ -2,7 +2,8 @@ package com.sparta.newsfeed.entity.alarm;
 
 public enum AlarmTypeEnum {
     COMMENT(Type.COMMENT),
-    LIKE(Type.LIKE);
+    LIKE(Type.LIKE),
+    RELATIONSHIP(Type.RELATIONSHIP);
 
     private final String type;
 
@@ -13,5 +14,6 @@ public enum AlarmTypeEnum {
     public static class Type {
         public static final String COMMENT = "TYPE_COMMENT";
         public static final String LIKE = "TYPE_LIKE";
+        public static final String RELATIONSHIP = "TYPE_RELATIONSHIP";
     }
 }

@@ -44,7 +44,7 @@ public class PostCommentService {
         // 알림 추가
         // 자기 포스트에 자기가 댓글 제외
         if(!post.getUser().equals(user)) {
-            sendAlarm(postComment.getId(), user);
+            sendAlarm(postComment.getId(), post.getUser());
         }
 
         return new PostCommentResponseDto(postComment, commentReqDto, postId);
