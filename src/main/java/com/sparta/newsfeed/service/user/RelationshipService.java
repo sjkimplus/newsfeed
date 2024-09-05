@@ -1,22 +1,16 @@
 package com.sparta.newsfeed.service.user;
 
-import com.sparta.newsfeed.dto.relationship.RelationshipRequestDto;
-import com.sparta.newsfeed.dto.relationship.RelationshipResponseDto;
-import com.sparta.newsfeed.dto.user.UserRequestDto;
-import com.sparta.newsfeed.dto.user.UserResponseDto;
 import com.sparta.newsfeed.entity.User;
 import com.sparta.newsfeed.entity.alarm.Alarm;
 import com.sparta.newsfeed.entity.alarm.AlarmTypeEnum;
 import com.sparta.newsfeed.entity.relation.Relationship;
 import com.sparta.newsfeed.entity.relation.RelationshipStatusEnum;
 import com.sparta.newsfeed.exception.DataDuplicationException;
-import com.sparta.newsfeed.repository.AlarmRepository;
-import com.sparta.newsfeed.exception.DataDuplicationException;
 import com.sparta.newsfeed.exception.DataNotFoundException;
+import com.sparta.newsfeed.repository.AlarmRepository;
 import com.sparta.newsfeed.repository.RelationshipRepository;
 import com.sparta.newsfeed.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
