@@ -1,9 +1,10 @@
-package com.sparta.newsfeed.entity;
+package com.sparta.newsfeed.entity.post;
 
+import com.sparta.newsfeed.entity.PostComment;
+import com.sparta.newsfeed.entity.User;
 import com.sparta.newsfeed.entity.like.Like;
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -42,9 +43,6 @@ public class Post {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PostComment> comments = new ArrayList<>();
 
-// 확실치 안음.
-//    @OneToMany(mappedBy = "likes", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<Like> likes = new ArrayList<>();
 
     public Post(User user, String content) {
         this.user = user;

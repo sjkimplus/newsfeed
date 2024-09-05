@@ -1,6 +1,7 @@
 package com.sparta.newsfeed;
 
 import com.sparta.newsfeed.entity.*;
+import com.sparta.newsfeed.entity.post.Post;
 import com.sparta.newsfeed.repository.PostCommentRepository;
 import com.sparta.newsfeed.repository.PostRepository;
 import com.sparta.newsfeed.repository.UserRepository;

@@ -1,6 +1,7 @@
 package com.sparta.newsfeed.entity.like;
 
 import com.sparta.newsfeed.entity.User;
+import com.sparta.newsfeed.entity.post.Post;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,6 +30,7 @@ public class Like {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
 
     @CreatedDate
     @Column(updatable = false)

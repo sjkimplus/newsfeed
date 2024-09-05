@@ -87,6 +87,19 @@ public class RelationshipService {
         return relationshipRepository.findBySentUserAndReceivedUser(sentUser, receivedUser);
     }
 
+    public boolean checkFriend(String userEmail, String postedUserEmail) {
+
+        User viewUser = userRepository.findByEmail(userEmail).orElseThrow();
+        User postUser = userRepository.findByEmail(postedUserEmail).orElseThrow();
+
+        // 친구 게시물인지 확인
+        Optional<Relationship> relationship1 = findRelationship(viewUser, postUser);
+        Optional<Relationship> relationship2 = findRelationship(postUser, viewUser);
+
+        return (relationship1.isPresent() && relationship1.get().getStatus() == RelationshipStatusEnum.ACCEPTED)
+                || (relationship2.isPresent() && relationship2.get().getStatus() == RelationshipStatusEnum.ACCEPTED);
+    }
+
     private Optional<User> findUser(String email){
         return userRepository.findByEmail(email);
     }
