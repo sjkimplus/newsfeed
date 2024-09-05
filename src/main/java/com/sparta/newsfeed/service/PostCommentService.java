@@ -39,7 +39,7 @@ public class PostCommentService {
                 new EntityNotFoundException("사용자를 찾을 수 없습니다.")
         );
 
-        PostComment postComment = new PostComment(commentReqDto, post);
+        PostComment postComment = new PostComment(commentReqDto, post, user);
         commentRepository.save(postComment);
         // 알림 추가
         // 자기 포스트에 자기가 댓글 제외

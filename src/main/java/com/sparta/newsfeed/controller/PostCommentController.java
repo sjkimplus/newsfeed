@@ -28,7 +28,7 @@ public class PostCommentController {
         return ResponseEntity.ok(commentService.findByAllComment(postId));
     }
 
-    @PutMapping("/posts/{postId}/comments/{commentId}")    // 특정 게시물 수정
+    @PutMapping("/posts/{postId}/comments/{commentId}")    // 특정 게시물 댓글 수정
     public ResponseEntity<PostCommentResponseDto> modifyComment(@RequestBody PostCommentRequestDto commentReqDto,
                                                                 @PathVariable Long postId,
                                                                 @PathVariable Long commentId) {

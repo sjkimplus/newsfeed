@@ -86,7 +86,7 @@ public class AlarmService {
         String type;
         Long itemId;
         switch(alarm.getType()) {
-            case LIKE -> {
+            case LIKE -> { // LIKE & COMMENT 하드 delete시 익셉션남
                 Like like = likeRepository.findById(alarm.getItemId())
                         .orElseThrow(() -> new DataNotFoundException("선택한 좋아요가 존재하지 않습니다."));
                 type = String.valueOf(like.getType());
