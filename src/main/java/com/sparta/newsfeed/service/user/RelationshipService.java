@@ -1,20 +1,16 @@
 package com.sparta.newsfeed.service.user;
 
-import com.sparta.newsfeed.dto.relationship.RelationshipRequestDto;
-import com.sparta.newsfeed.dto.relationship.RelationshipResponseDto;
-import com.sparta.newsfeed.dto.user.UserRequestDto;
-import com.sparta.newsfeed.dto.user.UserResponseDto;
 import com.sparta.newsfeed.entity.User;
 import com.sparta.newsfeed.entity.alarm.Alarm;
 import com.sparta.newsfeed.entity.alarm.AlarmTypeEnum;
 import com.sparta.newsfeed.entity.relation.Relationship;
 import com.sparta.newsfeed.entity.relation.RelationshipStatusEnum;
 import com.sparta.newsfeed.exception.DataDuplicationException;
+import com.sparta.newsfeed.exception.DataNotFoundException;
 import com.sparta.newsfeed.repository.AlarmRepository;
 import com.sparta.newsfeed.repository.RelationshipRepository;
 import com.sparta.newsfeed.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,11 +33,11 @@ public class RelationshipService {
         List<User> users = checkUser(sentEmail, receivedEmail);
 
         //데이터 중복 방지
-        if(findRelationship(users.get(0), users.get(1)).isPresent()) throw new IllegalArgumentException("이미 친구 추가 요청을 보냈습니다.");
+        if(findRelationship(users.get(0), users.get(1)).isPresent()) throw new DataDuplicationException("이미 친구 추가 요청을 보냈습니다.");
 
         //이미 상대방이 친구 요청을 했을경우
         Optional<Relationship> receivedRelationship = findRelationship(users.get(1), users.get(0));
-        if(receivedRelationship.isPresent()) throw new IllegalArgumentException("이미 상대방이 친구 추가 요청을 보냈습니다.");
+        if(receivedRelationship.isPresent()) throw new DataDuplicationException("이미 상대방이 친구 추가 요청을 보냈습니다.");
 
         Relationship newRelationship = new Relationship(users.get(0), users.get(1));
 
@@ -61,7 +57,7 @@ public class RelationshipService {
         List<User> users = checkUser(sentEmail, ownerEmail);
 
         Optional<Relationship> relationship = findRelationship(users.get(0), users.get(1));
-        if(relationship.isEmpty()) throw new IllegalArgumentException("존재하지 않는 친구 요청 입니다");
+        if(relationship.isEmpty()) throw new DataNotFoundException("존재하지 않는 친구 요청 입니다");
         if(!relationship.get().getStatus().equals(RelationshipStatusEnum.WAITING))
             return  "유저가 " + relationship.get().getStatus() + " 했습니다.";
 
@@ -76,7 +72,7 @@ public class RelationshipService {
         List<User> users = checkUser(targetEmail, ownerEmail);
 
         Optional<Relationship> relationship = findRelationship(users.get(0), users.get(1));
-        if(relationship.isEmpty()) throw new IllegalArgumentException("친구가 아닙니다.");
+        if(relationship.isEmpty()) throw new DataNotFoundException("친구가 아닙니다.");
 
         relationshipRepository.deleteBySentUserAndReceivedUser(users.get(0), users.get(1));
 
@@ -107,8 +103,8 @@ public class RelationshipService {
     private List<User> checkUser(String sentEmail, String receivedEmail){
         Optional<User> sentUsers = findUser(sentEmail);
         Optional<User> receivedUsers = findUser(receivedEmail);
-        if(sentUsers.isEmpty() || sentUsers.get().getDateDeleted() != null) throw new IllegalArgumentException("존재하지 않는 아이디 입니다");
-        if(receivedUsers.isEmpty() || receivedUsers.get().getDateDeleted() != null) throw new IllegalArgumentException("존재하지 않는 아이디 입니다");
+        if(sentUsers.isEmpty() || sentUsers.get().getDateDeleted() != null) throw new DataNotFoundException("존재하지 않는 아이디 입니다");
+        if(receivedUsers.isEmpty() || receivedUsers.get().getDateDeleted() != null) throw new DataNotFoundException("존재하지 않는 아이디 입니다");
 
         List<User> temp = new ArrayList<>();
         temp.add(sentUsers.get());
