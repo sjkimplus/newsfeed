@@ -16,7 +16,5 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
     @Query("SELECT i FROM Image i WHERE i.itemId = :itemId")
     List<Image> findByItemId(@Param("itemId") Long itemId);
 
-    Image findByIdAndType(Long id, Type user);
-
     List<Image> findByTypeAndItemId(Type user, Long id);
 }
