@@ -19,7 +19,7 @@ public class PostCommentController {
 
     @PostMapping("/posts/{postId}/comments")    // 댓글 작성
     public ResponseEntity<PostCommentResponseDto> createdComment(@RequestBody PostCommentRequestDto commentReqDto,
-                                                                 @PathVariable Long postId) {
+                                                                 @PathVariable("postId") Long postId) {
         return ResponseEntity.ok(commentService.createdComment(commentReqDto, postId));
     }
 

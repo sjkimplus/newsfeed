@@ -2,7 +2,6 @@ package com.sparta.newsfeed.service;
 
 import com.sparta.newsfeed.dto.alarm.AlarmResponseDto;
 import com.sparta.newsfeed.dto.alarm.AlarmTextResponseDto;
-import com.sparta.newsfeed.entity.Post;
 import com.sparta.newsfeed.entity.PostComment;
 import com.sparta.newsfeed.entity.User;
 import com.sparta.newsfeed.entity.alarm.Alarm;
