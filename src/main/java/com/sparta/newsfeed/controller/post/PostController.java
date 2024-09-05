@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
@@ -72,7 +73,7 @@ public class PostController {
     // 게시물 삭제, 본인확인
     @DeleteMapping("/posts/{postId}")
     public void deletePost(@CookieValue(JwtUtil.AUTHORIZATION_HEADER) String tokenValue,
-                           @PathVariable("postId") long postId) {
+                           @PathVariable("postId") long postId) throws IOException {
 
         PostResponseDto postResponseDto = postService.getPost(postId);
         // 수정하려는 게시물의 글쓴이와 현제 삭제요청을 하는 유저가 동일한지 확인

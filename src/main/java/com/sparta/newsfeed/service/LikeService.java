@@ -33,28 +33,28 @@ public class LikeService {
         // 좋아요 생성
         Like like = new Like(type, itemId, user);
         // 이미 좋아요있는지 확인
-        if (findTypeItemId(type, itemId) == null) {
+        if (findTypeItemIdUser(type, itemId, user) == null) {
             likeRepository.save(like);
-        } else if (findTypeItemId(type, itemId).getUser().getEmail().equals(userEmail)) {
+            // 알림 추가
+            // 자화자찬 제외
+            if(!typeIdUser.equals(user)) {
+                sendAlarm(like.getId(), typeIdUser);
+            }
+            return new LikeResponseDto(like);
+        } else if (findTypeItemIdUser(type, itemId, user).getUser().getEmail().equals(userEmail)) {
             throw new IllegalArgumentException("이미 좋아요를 눌렀습니다.");
         }
-        // 알림 추가
-        // 자화자찬 제외
-        if(!typeIdUser.getId().equals(user.getId())) {
-            sendAlarm(like.getId(), typeIdUser);
-        }
-
-        return new LikeResponseDto(like);
+        return null;
     }
 
     @Transactional
     public void deleteLike(String userEmail, LikeTypeEnum type, Long itemId) {
         // 유저 존재 확인
-        findUserEmail(userEmail);
+        User user = findUserEmail(userEmail);
         // type itemId 존재 확인
         typeItemId(type, itemId);
         // 좋아요 삭제
-        likeRepository.delete(findTypeItemId(type, itemId));
+        likeRepository.delete(findTypeItemIdUser(type, itemId, user));
     }
 
     public List<LikeResponseDto> getLikes(String userEmail, LikeTypeEnum type) {
@@ -72,8 +72,8 @@ public class LikeService {
 
 
     // type, itemId 로 Like 가져오기 메서드
-    public Like findTypeItemId(LikeTypeEnum type, Long itemId) {
-        return likeRepository.findByTypeAndItemId(type, itemId);
+    public Like findTypeItemIdUser(LikeTypeEnum type, Long itemId, User user) {
+        return likeRepository.findByTypeAndItemIdAndUser(type, itemId, user);
     }
     // userEmail 로 User 가져오기 메서드
     public User findUserEmail(String userEmail) {

@@ -17,8 +17,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 import static com.sparta.newsfeed.entity.Type.POST;
 import static com.sparta.newsfeed.entity.post.PostSortTypeEnum.*;
 
@@ -34,7 +36,7 @@ public class PostService {
     private final PostCommentRepository postCommentRepository;
     private final FileUtils fileUtils;
 
-    @Transactional
+
     public PostResponseDto createPost(String userEmail, PostRequestDto requestDto, List<MultipartFile> multipartFiles) throws Exception {
         // 사용자 찾기
         User user = userRepository.findByEmail(userEmail).orElseThrow();
@@ -43,16 +45,8 @@ public class PostService {
         Post post = new Post(user, requestDto.getContent());
         postRepository.save(post);
 
-        // 파일 저장 및 이미지 URL 리스트 생성
-        List<String> imagePaths = fileUtils.parseInsertFileInfo(multipartFiles, POST);
+        fileUtils.saveImage(POST, multipartFiles, post.getId());
 
-        for (String imagePath : imagePaths) {
-            // 이미지 URL을 DB에 저장
-            if (!imagePath.isEmpty()) {
-                Image img = new Image(post.getId(), POST, imagePath);
-                imageRepository.save(img);
-            }
-        }
         return getPost(post.getId());  // 이미지 URL 리스트 반환
     }
 
@@ -60,14 +54,8 @@ public class PostService {
         // find the post
         Post post = postRepository.findById(postId).orElseThrow();
 
-        // Initialize a list to store image URLs
-        List<String> imageUrls = new ArrayList<>();
 
-        // get the corresponding images of the post
-        List<Image> images = imageRepository.findAllByTypeAndItemId(POST, post.getId());
-        for (Image file : images) {
-            imageUrls.addAll(file.getImageUrl()); // Add all image URLs to the list
-        }
+        List<String> imageUrls = fileUtils.getImage(POST,post.getId());
 
         // get the number of likes
         Long likeCount = likeRepository.countByTypeAndItemId(LikeTypeEnum.POST, postId);
@@ -87,8 +75,14 @@ public class PostService {
     }
 
     @Transactional
-    public void deletePost(long postId) {
+    public void deletePost(long postId) throws IOException {
         postRepository.deleteById(postId);
+
+        // 1. 기존 이미지 파일을 가져오기
+        List<Image> imagesToDelete = imageRepository.findByItemId(postId);
+
+        // 1.1 기존 파일 삭제 (DB 및 파일 시스템)
+        fileUtils.deleteExistingImages(imagesToDelete);
     }
 
     public Page<PageResponseDto> getPosts(String feedUserEmail, int page, int size) {
@@ -146,6 +140,5 @@ public class PostService {
 
         return new PageImpl<>(dtoList, pageable, dtoList.size());
     }
+
 }
-
-
