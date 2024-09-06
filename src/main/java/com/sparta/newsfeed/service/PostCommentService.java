@@ -2,6 +2,7 @@ package com.sparta.newsfeed.service;
 
 import com.sparta.newsfeed.dto.comment.PostCommentRequestDto;
 import com.sparta.newsfeed.dto.comment.PostCommentResponseDto;
+import com.sparta.newsfeed.entity.like.Like;
 import com.sparta.newsfeed.entity.post.Post;
 import com.sparta.newsfeed.entity.PostComment;
 import com.sparta.newsfeed.entity.User;
@@ -129,6 +130,10 @@ public class PostCommentService {
             throw new CommentAuthOrVerificationException("댓글 작성자가 아닙니다."); // CommentAuthOrVerificationException 사용
         }
 
+        // 알림 삭제
+        if(!postId.equals(user.getId())) {
+            deleteAlarm(commentId);
+        }
         // 댓글 삭제
         commentRepository.deleteById(comment.getId());
         return comment.getId() + "번 댓글 삭제 완료";
@@ -138,5 +143,9 @@ public class PostCommentService {
     public void sendAlarm(Long itemId, User user) {
         Alarm alarm = new Alarm(AlarmTypeEnum.COMMENT, itemId, user);
         alarmRepository.save(alarm);
+    }
+    // 알림 삭제 메서드
+    private void deleteAlarm(Long commentId) {
+        alarmRepository.delete(alarmRepository.findByTypeAndItemId(AlarmTypeEnum.COMMENT, commentId));
     }
 }
