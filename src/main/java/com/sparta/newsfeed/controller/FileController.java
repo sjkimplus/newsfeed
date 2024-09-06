@@ -1,14 +1,16 @@
 package com.sparta.newsfeed.controller;
 
 import com.sparta.newsfeed.exception.DataNotFoundException;
+import com.sparta.newsfeed.service.user.UserService;
 import com.sparta.newsfeed.utile.FileUtils;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,7 +26,24 @@ import java.util.List;
 public class FileController {
 
     private final FileUtils fileUtils;
+    private final UserService userService;
 
+    @PostMapping("/users/{email}/image")
+    public ResponseEntity<?> createUsersImage(@PathVariable String email, @RequestPart("multipartFile") List<MultipartFile> multipartFile) throws IOException {
+        try {
+            return ResponseEntity.ok(userService.createUsersImage(email, multipartFile));  // 성공 시 HTTP 200 OK와 함께 이미지 경로 반환
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+    @PutMapping("/users/{email}/image")
+    public List<String> modifyUsersImage (@PathVariable String
+                                                  email, @RequestPart(value = "multipartFile", required = false) List < MultipartFile > multipartFile) throws
+            IOException {
+        return userService.modifyUsersImage(email, multipartFile);
+    }
     // 업로드된 이미지 파일을 불러오는 API (파일 경로 숨김)
     @GetMapping("/files/{type}/{filename:.+}")
     public void loadImage(@PathVariable("type") String type, @PathVariable("filename") String filename,

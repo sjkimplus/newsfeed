@@ -53,20 +53,4 @@ public class UserController {
         return ResponseEntity.ok(userService.findProfile(email));
     }
 
-    @PostMapping("/users/{email}/image")
-    public ResponseEntity<?> createUsersImage(@PathVariable String email, @RequestPart("multipartFile") List<MultipartFile> multipartFile) throws IOException {
-        try {
-            return ResponseEntity.ok(userService.createUsersImage(email, multipartFile));  // 성공 시 HTTP 200 OK와 함께 이미지 경로 반환
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-        } catch (IllegalArgumentException e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
-    }
-        @PutMapping("/users/{email}/image")
-        public List<String> modifyUsersImage (@PathVariable String
-        email, @RequestPart(value = "multipartFile", required = false) List < MultipartFile > multipartFile) throws
-        IOException {
-            return userService.modifyUsersImage(email, multipartFile);
-        }
-    }
+}
