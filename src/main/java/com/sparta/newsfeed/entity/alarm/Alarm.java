@@ -20,7 +20,7 @@ public class Alarm {
     private Long itemId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "received_id")
     private User user;
 
     public Alarm(AlarmTypeEnum type, Long itemId, User user) {

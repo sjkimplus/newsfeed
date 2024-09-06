@@ -33,7 +33,6 @@ public class AlarmController {
 
     @DeleteMapping("/api/alarms") // 알림 삭제
     public String deleteAlarm(@Auth AuthUser authUser, @RequestParam("alarmId") Long alarmId) {
-        alarmService.deleteAlarm(authUser.getEmail(), alarmId);
-        return "알림 삭제 완료";
+        return alarmService.deleteAlarm(authUser.getEmail(), alarmId);
     }
 }
