@@ -58,6 +58,7 @@ public class GlobalExceptionController {
                 + " 당신이 넣은 값은 " + ex.getValue() + " 입니다.";
     }
 
+    // 권한관련 exception
     @ExceptionHandler(ResponseStatusException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     @ResponseBody
