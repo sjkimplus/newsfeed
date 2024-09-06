@@ -3,6 +3,7 @@ package com.sparta.newsfeed.service.user;
 import com.sparta.newsfeed.entity.User;
 import com.sparta.newsfeed.entity.alarm.Alarm;
 import com.sparta.newsfeed.entity.alarm.AlarmTypeEnum;
+import com.sparta.newsfeed.entity.like.Like;
 import com.sparta.newsfeed.entity.relation.Relationship;
 import com.sparta.newsfeed.entity.relation.RelationshipStatusEnum;
 import com.sparta.newsfeed.exception.DataDuplicationException;
@@ -43,7 +44,7 @@ public class RelationshipService {
         relationshipRepository.save(newRelationship);
 
         // 알림 추가
-        //sendAlarm(newRelationship.getId(), users.get(1));
+        sendAlarm(newRelationship.getId(), users.get(1));
         return "친구 요청이 완료되었습니다.";
     }
 
@@ -69,6 +70,9 @@ public class RelationshipService {
 
         Optional<Relationship> relationship = findRelationship(users.get(0), users.get(1));
         if(relationship.isEmpty()) throw new DataNotFoundException("친구가 아닙니다.");
+
+        // 알림 삭제
+        deleteAlarm(relationship.get());
 
         relationshipRepository.deleteBySentUserAndReceivedUser(users.get(0), users.get(1));
 
@@ -112,5 +116,9 @@ public class RelationshipService {
     public void sendAlarm(Long itemId, User user) {
         Alarm alarm = new Alarm(AlarmTypeEnum.RELATIONSHIP, itemId, user);
         alarmRepository.save(alarm);
+    }
+    // 알림 삭제 메서드
+    private void deleteAlarm(Relationship relationship) {
+        alarmRepository.delete(alarmRepository.findByTypeAndItemId(AlarmTypeEnum.RELATIONSHIP, relationship.getId()));
     }
 }

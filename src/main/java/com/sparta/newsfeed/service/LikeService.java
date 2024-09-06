@@ -39,7 +39,7 @@ public class LikeService {
             likeRepository.save(like);
             // 알림 추가
             // 자화자찬 제외
-            if(!typeIdUser.equals(user)) {
+            if (!typeIdUser.equals(user)) {
                 sendAlarm(like.getId(), typeIdUser);
             }
             return new LikeResponseDto(like);
@@ -58,8 +58,10 @@ public class LikeService {
         // 좋아요 검증
         Like like = findTypeItemIdUser(type, itemId, user);
         if (like == null) {
-            throw  new DataNotFoundException("삭제할 좋아요가 없습니다.");
+            throw new DataNotFoundException("삭제할 좋아요가 없습니다.");
         }
+        // 알림 삭제
+        deleteAlarm(like, user);
         // 좋아요 삭제
         likeRepository.delete(like);
         return "삭제 완료";
@@ -78,15 +80,16 @@ public class LikeService {
     }
 
 
-
     // type, itemId 로 Like 가져오기 메서드
     public Like findTypeItemIdUser(LikeTypeEnum type, Long itemId, User user) {
         return likeRepository.findByTypeAndItemIdAndUser(type, itemId, user);
     }
+
     // userEmail 로 User 가져오기 메서드
     public User findUserEmail(String userEmail) {
         return userRepository.findByEmail(userEmail).orElseThrow(() -> new DataNotFoundException("선택한 유저는 존재하지 않습니다."));
     }
+
     // type itemID 존재 확인 메서드
     private User typeItemId(LikeTypeEnum type, Long itemId) {
         switch (type) {
@@ -105,11 +108,21 @@ public class LikeService {
             }
         }
     }
+
     // 알림 추가 메서드
     public void sendAlarm(Long itemId, User user) {
         // 유저 존재 확인
         Alarm alarm = new Alarm(AlarmTypeEnum.LIKE, itemId, user);
         // 알림 저장
         alarmRepository.save(alarm);
+    }
+
+    // 알림 삭제 메서드
+    private void deleteAlarm(Like like, User user) {
+        Alarm alarm = alarmRepository.findByTypeAndItemId(AlarmTypeEnum.LIKE, like.getId());
+        if (alarm == null) {
+        } else if (alarm.getUser() != user) {
+            alarmRepository.delete(alarm);
+        }
     }
 }
