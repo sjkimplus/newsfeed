@@ -48,7 +48,7 @@ public class PostCommentService {
                 new DataNotFoundException("사용자를 찾을 수 없습니다.")  // DataNotFoundException 사용
         );
 
-        PostComment postComment = new PostComment(commentReqDto, post);
+        PostComment postComment = new PostComment(commentReqDto, post, user);
         commentRepository.save(postComment);
 
         // 자기 포스트에 자기가 댓글 제외

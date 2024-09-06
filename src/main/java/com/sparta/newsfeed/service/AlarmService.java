@@ -8,6 +8,7 @@ import com.sparta.newsfeed.entity.alarm.Alarm;
 import com.sparta.newsfeed.entity.alarm.AlarmTypeEnum;
 import com.sparta.newsfeed.entity.like.Like;
 import com.sparta.newsfeed.exception.DataNotFoundException;
+import com.sparta.newsfeed.exception.PasswordMismatchException;
 import com.sparta.newsfeed.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -53,12 +54,18 @@ public class AlarmService {
     }
 
     @Transactional
-    public void deleteAlarm(String userEmail, Long alarmId) {
+    public String deleteAlarm(String userEmail, Long alarmId) {
         // 본인 확인
-        findUserEmail(userEmail);
+        User user = findUserEmail(userEmail);
+        Alarm alarm = alarmRepository.findById(alarmId)
+                .orElseThrow(() -> new DataNotFoundException("선택한 알림이 존재하지 않습니다."));
         // 알림 삭제
-        alarmRepository.delete(alarmRepository.findById(alarmId)
-                .orElseThrow(() -> new DataNotFoundException("선택한 알림이 존재하지 않습니다.")));
+        if (user == alarm.getUser()) {
+            alarmRepository.delete(alarm);
+            return "알림 삭제 완료"; // 변경 필요
+        } else {
+            throw new PasswordMismatchException("본인 알람만 삭제 할 수 있습니다.");
+        }
     }
 
 
@@ -86,7 +93,7 @@ public class AlarmService {
         String type;
         Long itemId;
         switch(alarm.getType()) {
-            case LIKE -> {
+            case LIKE -> { // LIKE & COMMENT 하드 delete시 익셉션남
                 Like like = likeRepository.findById(alarm.getItemId())
                         .orElseThrow(() -> new DataNotFoundException("선택한 좋아요가 존재하지 않습니다."));
                 type = String.valueOf(like.getType());
